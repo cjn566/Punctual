@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">punctual</string>
+    <string name="edit_message">BOOOOOOP</string>
+    <string name="button_send">Send</string>
+    <string name="new_deadline_dialog_title">New Deadline</string>
+    <string name="title_activity_deadline">Deadline</string>
+    <string name="action_settings">Settings</string>
+    <string name="new_task_dialog_title">New Task</string>
+    <string name="reset_tasks">Reset Tasks</string>
+    <string name="toggle_active">Toggle Active</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="edit_deadline">Edit</string>
+</resources>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item android:id="@+id/reset_tasks"
+        android:title="@string/reset_tasks"
+        android:icon="@drawable/ic_history_black_24dp"
+        app:showAsAction="ifRoom">
+    </item>
+    <item android:id="@+id/edit_deadline"
+        android:title="@string/edit_deadline"
+        android:icon="@drawable/ic_edit_black_24dp"
+        app:showAsAction="ifRoom">
+    </item>
+    <item
+        android:id="@+id/menu_deadline_active_switch"
+        android:title="@string/toggle_active"
+        android:checkable="true"
+        app:actionLayout="@layout/ic_toggle"
+        app:showAsAction="always"/>
+    <item
+        android:id="@+id/delete_deadline"
+        android:title="Delete"
+        app:showAsAction="never"/>
+
+</menu>
