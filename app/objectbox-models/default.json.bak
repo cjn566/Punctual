@@ -1,0 +1,79 @@
+{
+  "_note1": "KEEP THIS FILE! Check it into a version control system (VCS) like git.",
+  "_note2": "ObjectBox manages crucial IDs for your object model. See docs for details.",
+  "_note3": "If you have VCS merge conflicts, you must resolve them according to ObjectBox docs.",
+  "entities": [
+    {
+      "id": "1:4886684600108776135",
+      "lastPropertyId": "5:4206075923108556945",
+      "name": "Deadline",
+      "properties": [
+        {
+          "id": "1:2173652667578127127",
+          "name": "id"
+        },
+        {
+          "id": "2:7065607907299576055",
+          "name": "name"
+        },
+        {
+          "id": "3:2361681698599079201",
+          "name": "hour"
+        },
+        {
+          "id": "4:7282885377510340243",
+          "name": "minute"
+        },
+        {
+          "id": "5:4206075923108556945",
+          "name": "active"
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "2:2471264857147969286",
+      "lastPropertyId": "6:5221174909141373784",
+      "name": "Task",
+      "properties": [
+        {
+          "id": "1:7391712853114545420",
+          "name": "duration"
+        },
+        {
+          "id": "2:890524989276573488",
+          "name": "id"
+        },
+        {
+          "id": "3:7214246307688673610",
+          "name": "name"
+        },
+        {
+          "id": "4:640449363187242335",
+          "indexId": "1:8103629538669510287",
+          "name": "deadlineId"
+        },
+        {
+          "id": "5:4416644955846869578",
+          "name": "completed"
+        }
+      ],
+      "relations": []
+    }
+  ],
+  "lastEntityId": "2:2471264857147969286",
+  "lastIndexId": "1:8103629538669510287",
+  "lastRelationId": "1:3041608796486798152",
+  "lastSequenceId": "0:0",
+  "modelVersion": 4,
+  "modelVersionParserMinimum": 4,
+  "retiredEntityUids": [],
+  "retiredIndexUids": [],
+  "retiredPropertyUids": [
+    5221174909141373784
+  ],
+  "retiredRelationUids": [
+    3041608796486798152
+  ],
+  "version": 1
+}

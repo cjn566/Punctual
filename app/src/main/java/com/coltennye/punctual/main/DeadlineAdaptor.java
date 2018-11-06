@@ -28,7 +28,7 @@ public class DeadlineAdaptor extends BaseAdapter {
     public View getView(int i, View view, ViewGroup viewGroup) {
         DeadlineViewHolder holder;
         if(view == null){
-            view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.deadline, viewGroup, false);
+            view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.item_deadline, viewGroup, false);
             holder = new DeadlineViewHolder(view);
             view.setTag(holder);
         } else {

@@ -1,3 +1,10 @@
 <resources>
     <dimen name="fab_margin">16dp</dimen>
+
+    <dimen name="task_right_pad">50dp</dimen>
+
+    <dimen name="due_line_thickness">10dp</dimen>
+    <dimen name="min_rem_text_size">10dp</dimen>
+    <dimen name="min_rem_text_pad">5dp</dimen>
+
 </resources>

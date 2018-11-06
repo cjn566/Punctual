@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.coltennye.punctual.views.TaskView xmlns:android="http://schemas.android.com/apk/res/android"
+
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <TextView
+        android:id="@+id/task_text"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="@dimen/task_right_pad"
+        android:layout_marginBottom="1dp"
+        android:layout_marginTop="1dp"
+        android:layout_gravity="center_vertical"
+        android:background="@drawable/layout_bg"
+        android:textAlignment="center"
+        />
+
+
+</com.coltennye.punctual.views.TaskView>

@@ -56,10 +56,7 @@ public class MainActivity extends AppCompatActivity {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Intent intent = new Intent(MainActivity.this, DeadlineActivity.class);
-                long deadlineId = deadlineAdaptor.getItem(i).id;
-                intent.putExtra(EXTRA_DEADLINE_ID, deadlineId);
-                startActivity(intent);
+                goToDeadline(deadlineAdaptor.getItem(i).id);
             }
         });
 
@@ -76,10 +73,6 @@ public class MainActivity extends AppCompatActivity {
         deadlineAdaptor.setDeadlines(deadlines);
     }
 
-    private void onListItemClick(ListView l, View v, int position, long id) {
-        goToDeadline(deadlineAdaptor.getItem(position).id);
-    }
-
     private void goToDeadline(long deadlineID){
         Intent intent = new Intent(this, DeadlineActivity.class);
         intent.putExtra(this.EXTRA_DEADLINE_ID, deadlineID);
@@ -91,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(R.string.new_deadline_dialog_title)
-                .setView(R.layout.new_deadline)
+                .setView(R.layout.dlg_new_deadline)
                 .setCancelable(true)
                 .setPositiveButton("Add", new DialogInterface.OnClickListener() {
                     @Override

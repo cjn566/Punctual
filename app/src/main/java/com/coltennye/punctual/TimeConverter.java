@@ -15,6 +15,12 @@ public class TimeConverter {
         return (minutes % 60);
     }
 
+
+
+    public static String timeOfDayString(int minutes){
+        return "" + getHour(minutes) + ":" + getMinute(minutes);
+    }
+
     public static String timeRemainingString(int minutes){
         if(minutes >= 60) {
             int mins = getMinute(minutes);
