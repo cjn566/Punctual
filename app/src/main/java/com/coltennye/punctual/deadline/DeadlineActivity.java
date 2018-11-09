@@ -104,8 +104,8 @@ public class DeadlineActivity extends AppCompatActivity {
 
 
 
-        adaptor = new TaskAdaptor();
         listView = findViewById(R.id.lv_tasks_active);
+        adaptor = new TaskAdaptor(this);
         listView.setAdapter(adaptor);
         adaptor.setTasks(deadline.tasks);
 
@@ -249,6 +249,7 @@ public class DeadlineActivity extends AppCompatActivity {
     }
 
     private void toggleComplete(long id){
+        if(id == -1) return;
         Task t =  deadline.tasks.getById(id);
         t.toggleComplete();
         taskBox.put(t);

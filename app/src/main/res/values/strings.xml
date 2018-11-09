@@ -9,4 +9,19 @@
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="edit_deadline">Edit</string>
+
+    <string-array name="test">
+        <item>one</item>
+        <item>one</item>
+        <item>one</item>
+        <item>one</item>
+        <item>one</item>
+        <item>one</item>
+        <item>one</item>
+        <item>one</item>
+        <item>one</item>
+        <item>one</item>
+        <item>one</item>
+        <item>one</item>
+    </string-array>
 </resources>

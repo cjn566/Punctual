@@ -1,5 +1,6 @@
 package com.coltennye.punctual.deadline.tasks;
 
+import android.content.Context;
 import android.graphics.Paint;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,87 +11,112 @@ import android.widget.TextView;
 import com.coltennye.punctual.R;
 import com.coltennye.punctual.TimeConverter;
 import com.coltennye.punctual.db.Task;
-import com.coltennye.punctual.views.TaskView;
+import com.coltennye.punctual.views.MyListView;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class TaskAdaptor extends BaseAdapter {
 
-    private final int BASE_HEIGHT = 80;
+    private int baseHeight;
 
+    private MyListView listView;
     private int minDuration;
     private int minutesOnActiveTasks;
     private int minutesOnAllTasks;
     private int secondsUntilDue;
-    protected List<ViewTask> tasks;
+    private ViewTask divider;
+    private View divView;
+    private List<ViewTask> tasks;
+    private List<ViewTask> doneTasks;
 
-    public TaskAdaptor(){
+
+    public TaskAdaptor(Context context){
+        this.listView = listView;
         tasks = new ArrayList<>();
+        doneTasks = new ArrayList<>();
+        baseHeight =  context.getResources().getDimensionPixelSize(R.dimen.shortest_task_height);
+        divider = new ViewTask(-1, "", 0, false);
     }
 
     private static class TaskViewHolder {
+
         public TextView text;
         public TextView duration;
-        private TaskViewHolder(View itemView) {
+        public boolean active;
+
+        private TaskViewHolder(View itemView, boolean active) {
             text = itemView.findViewById(R.id.task_text);
+            this.active = active;
+            if(!active){
+                text.setPaintFlags(text.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+            }
         }
+    }
+
+    private View makeView(ViewGroup vg, boolean isActive) {
+        View view = LayoutInflater.from(vg.getContext())
+                .inflate(isActive ? R.layout.item_task : R.layout.item_task_done, vg, false);
+        return view;
     }
 
     @Override
     public View getView(int i, View view, ViewGroup viewGroup) {
-        TaskView mView = (TaskView) view;
-        TaskViewHolder holder;
-        ViewTask task = getItem(i);
+        int numActive = tasks.size();
 
-        if(view == null){
-            mView = (TaskView)LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.item_task, viewGroup, false);
-            mView.setPositions(task.duration * 60);
-
-            holder = new TaskViewHolder(mView);
-            mView.setTag(holder);
+        // divider
+        if (i == numActive) {
+            if (divView == null)
+                divView = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.task_list_divider, viewGroup, false);
+            return divView;
         } else {
-            holder = (TaskViewHolder) mView.getTag();
-        }
 
-
-        String txt = task.name;
-        ViewGroup.LayoutParams lp =  mView.getLayoutParams();
-
-        mView.noLine();
-
-        // Active task
-        if(!task.completed){
-            lp.height = ((task.duration * BASE_HEIGHT)/ minDuration); //todo: find the base height
-            txt += " (" + TimeConverter.timeRemainingString(task.duration) + ")";
-            holder.text.setPaintFlags(holder.text.getPaintFlags() & ~Paint.STRIKE_THRU_TEXT_FLAG);
-
-            // Falls entirely within remaining time
-            if((task.startTime + task.duration) <= (secondsUntilDue / 60)){
-
+            boolean isActive = (i < numActive);
+            TaskViewHolder holder = null;
+            if (view != null) {
+                holder = (TaskViewHolder) view.getTag();
+                if (holder == null || (holder.active != isActive)) {
+                    view = makeView(viewGroup, isActive);
+                    holder = new TaskViewHolder(view, isActive);
+                    view.setTag(holder);
+                }
             }
-            // Task is entirely after remaining time
-            else if(task.startTime > (secondsUntilDue / 60)) {
-
+            else{
+                view = makeView(viewGroup, isActive);
+                holder = new TaskViewHolder(view, isActive);
+                view.setTag(holder);
             }
-            // Task is split
-            else {
-                mView.setLineValues((secondsUntilDue / 60) + "m", (secondsUntilDue - (task.startTime * 60 )));
+
+            ViewTask task = (isActive? tasks.get(i) : doneTasks.get(i - numActive - 1));
+
+            String txt = task.name;
+
+            // Active task
+            if (isActive) {
+                ViewGroup.LayoutParams lp = view.getLayoutParams();
+                lp.height = ((task.duration * baseHeight) / minDuration);
+                view.setLayoutParams(lp);
+
+                /*
+                // Falls entirely within remaining time
+                if ((task.startTime + task.duration) <= (secondsUntilDue / 60)) {
+
+                }
+                // Task is entirely after remaining time
+                else if (task.startTime > (secondsUntilDue / 60)) {
+
+                }
+                // Task is split
+                else {
+                    //view.setLineValues((secondsUntilDue / 60) + "m", (secondsUntilDue - (task.startTime * 60 )));
+                }
+                */
             }
+
+            holder.text.setText(txt);
+
+            return view;
         }
-        // Completed task
-        else {
-            lp.height = BASE_HEIGHT;
-            holder.text.setPaintFlags(holder.text.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
-            //view.setBackgroundColor(Color.LTGRAY);
-
-        }
-
-        mView.setLayoutParams(lp);
-        holder.text.setText(txt);
-
-        return mView;
     }
 
     // Todo: update single view on line change
@@ -104,8 +130,13 @@ public class TaskAdaptor extends BaseAdapter {
     public void setTasks(List<Task> newTasks) {
 
         this.tasks.clear();
+        this.doneTasks.clear();
         for(Task t : newTasks){
-            tasks.add(t.toViewTask());
+            if(t.isCompleted())
+                doneTasks.add(t.toViewTask());
+            else{
+                tasks.add(t.toViewTask());
+            }
         }
 
         minutesOnActiveTasks = 0;
@@ -117,10 +148,14 @@ public class TaskAdaptor extends BaseAdapter {
             if (t.duration < minDuration)
                 minDuration = t.duration;
         }
+        for (ViewTask t : doneTasks) {
+            if (t.duration < minDuration)
+                minDuration = t.duration;
+        }
 
 
         // Sort tasks by completion
-        Collections.sort(tasks);
+        //Collections.sort(tasks);
 
 
         // get minutes left on tasks
@@ -138,16 +173,21 @@ public class TaskAdaptor extends BaseAdapter {
 
     @Override
     public int getCount() {
-        return tasks.size();
+        return tasks.size() + doneTasks.size() + 1;
     }
 
     @Override
     public ViewTask getItem(int i) {
-        return tasks.get(i);
+        int size = tasks.size();
+        if(i == size)
+            return divider;
+        else if(i < size)
+            return tasks.get(i);
+        else return  doneTasks.get(i - size - 1);
     }
 
     @Override
     public long getItemId(int i) {
-        return tasks.get(i).id;
+        return getItem(i).id;
     }
 }
