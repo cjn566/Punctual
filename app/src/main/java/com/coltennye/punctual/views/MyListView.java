@@ -6,6 +6,8 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.AttributeSet;
+import android.util.Log;
+import android.widget.AbsListView;
 import android.widget.ListView;
 
 import com.coltennye.punctual.R;
@@ -16,12 +18,17 @@ public class MyListView extends ListView {
     Paint mTxtPaint;
     String mLabel;
     boolean showLine = false;
-    int mLinePosition;
-    int mPositions;
+    int mSeconds;
+    int mMinMinutesHeightPx;
+    int mCurrentTaskSeconds;
+    int mActiveMinutes;
+    int mMaxSeconds;
+    int mSecondsInDivider;
+    int mPxInDivider;
     int mh;
     int mw;
-    int mLineY;
-    int mHeightPerPosition;
+    float mLineY;
+    float mHeightPerSecondPx;
     int mTextPad;
     int mStrokeWidth;
     int mRightPad;
@@ -33,6 +40,8 @@ public class MyListView extends ListView {
         mContext = context;
 
         Resources res = getResources();
+        mMinMinutesHeightPx = res.getDimensionPixelSize(R.dimen.shortest_task_height);
+        mPxInDivider = res.getDimensionPixelSize(R.dimen.divider_height);
         mRightPad = res.getDimensionPixelSize(R.dimen.task_right_pad);
         mStrokeWidth = res.getDimensionPixelSize(R.dimen.due_line_thickness);
 
@@ -46,36 +55,61 @@ public class MyListView extends ListView {
         mTxtPaint.setTextAlign(Paint.Align.CENTER);
         mTextPad = res.getDimensionPixelSize(R.dimen.min_rem_text_pad);
 
-        mPositions = 1;
+        this.setDivider(null);
+        this.setDividerHeight(0);
+
+        setOnScrollListener(new OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(AbsListView absListView, int i) {
+                Log.d("BOOOP", "State Changed: " + i);
+            }
+
+            @Override
+            public void onScroll(AbsListView absListView, int i, int i1, int i2) {
+                Log.d("BOOOP", "scroll: " + getScrollY());
+                scroll
+            }
+        });
     }
 
-    public void setPositions(int positions){
-        mPositions = positions;
+    public void setMinMinutes(int minutes){
+        mHeightPerSecondPx = mMinMinutesHeightPx / ( minutes * 60 );
+        mSecondsInDivider = (int)(mPxInDivider / mHeightPerSecondPx);
     }
 
+    public void setActiveMinutes(int minutes){
+        mMaxSeconds = (minutes * 60) + mSecondsInDivider;
+    }
 
+    public void setCurrentTaskMinutes(int minutes){
+        mCurrentTaskSeconds = (minutes * 60);
+    }
+
+/*
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
         mh = h;
         mw = w;
-        mHeightPerPosition = (h / mPositions);
+        mHeightPerSecondPx = (h / mActiveMinutes);
         setY();
     }
-
+*/
     public void noLine(){
         showLine = false;
     }
 
-    public void setLineValues(String label, int linePosition){
-        showLine = true;
-        mLinePosition = linePosition;
-        mLabel = label + "m";
+    public void setSeconds(int seconds){
+        showLine = (seconds <= mMaxSeconds);
+        if (!showLine) return;
+        mSeconds = seconds;
+        mLabel = (seconds / 60) + "m";
         setY();
     }
 
+    // Todo: Maybe merge these ^v
     private void setY(){
-        mLineY = (mLinePosition * mHeightPerPosition) - (mStrokeWidth / 2);
+        mLineY = (mSeconds * mHeightPerSecondPx) - (mStrokeWidth / 2);
         invalidate();
     }
 
@@ -83,8 +117,8 @@ public class MyListView extends ListView {
     protected void dispatchDraw(Canvas canvas) {
 
         if(showLine){
-            canvas.drawLine(0,mLineY, mw,mLineY,mLinePaint);
-            canvas.drawText(mLabel, mw - (mRightPad / 2), mLineY - (mTextPad  + (mStrokeWidth / 2)), mTxtPaint);
+            canvas.drawLine(0,mLineY, getWidth(), mLineY, mLinePaint);
+            canvas.drawText(mLabel, getWidth() - (mRightPad / 2), mLineY - (mTextPad  + (mStrokeWidth / 2)), mTxtPaint);
         }
 
 

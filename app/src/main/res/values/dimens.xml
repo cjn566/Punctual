@@ -3,6 +3,7 @@
 
     <dimen name="task_right_pad">50dp</dimen>
     <dimen name="shortest_task_height">20dp</dimen>
+    <dimen name="divider_height">50dp</dimen>
 
     <dimen name="due_line_thickness">10dp</dimen>
     <dimen name="min_rem_text_size">10dp</dimen>

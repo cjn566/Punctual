@@ -30,6 +30,7 @@ import com.coltennye.punctual.main.MainActivity;
 import com.coltennye.punctual.R;
 import com.coltennye.punctual.db.Deadline;
 import com.coltennye.punctual.db.Deadline_;
+import com.coltennye.punctual.views.MyListView;
 
 import java.util.Calendar;
 import java.util.Locale;
@@ -49,7 +50,7 @@ public class DeadlineActivity extends AppCompatActivity {
     private TextView timeLeft;
 
 
-    private ListView listView;
+    private MyListView listView;
     private Deadline deadline;
     private Box<Task> taskBox;
 
@@ -105,9 +106,10 @@ public class DeadlineActivity extends AppCompatActivity {
 
 
         listView = findViewById(R.id.lv_tasks_active);
-        adaptor = new TaskAdaptor(this);
+        adaptor = new TaskAdaptor(this, listView);
         listView.setAdapter(adaptor);
         adaptor.setTasks(deadline.tasks);
+        adaptor.notifyTasksChanged();
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -245,7 +247,7 @@ public class DeadlineActivity extends AppCompatActivity {
         int secondsRemaining = (int) (dueTime - System.currentTimeMillis()) / (1000);
         int minutesRemaining = secondsRemaining / 60;
         timeLeft.setText("Time left: " + TimeConverter.timeRemainingString(minutesRemaining));
-        adaptor.updateTimeTillDue(secondsRemaining);
+        listView.setSeconds(secondsRemaining);
     }
 
     private void toggleComplete(long id){
@@ -358,11 +360,8 @@ public class DeadlineActivity extends AppCompatActivity {
         // Commit to DB, redraw UI
         task.deadline.setTarget(deadline);
         taskBox.put(task);
-        updateList();
-    }
-
-    private void updateList(){
         adaptor.setTasks(deadline.tasks);
+        adaptor.notifyTasksChanged();
     }
 
     @Override

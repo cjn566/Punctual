@@ -31,7 +31,7 @@ public class TaskAdaptor extends BaseAdapter {
     private List<ViewTask> doneTasks;
 
 
-    public TaskAdaptor(Context context){
+    public TaskAdaptor(Context context, MyListView listView){
         this.listView = listView;
         tasks = new ArrayList<>();
         doneTasks = new ArrayList<>();
@@ -119,12 +119,22 @@ public class TaskAdaptor extends BaseAdapter {
         }
     }
 
-    // Todo: update single view on line change
-    // Todo: Show more info
+    public void notifyTasksChanged(){
+        // Get smallest task as base unit for layout heights
+        minDuration = 1000;
+        minutesOnAllTasks = 0;
+        for (ViewTask t : tasks) {
+            minutesOnAllTasks += t.duration;
+            if (t.duration < minDuration)
+                minDuration = t.duration;
+        }
+        for (ViewTask t : doneTasks) {
+            minutesOnAllTasks += t.duration;
+            if (t.duration < minDuration)
+                minDuration = t.duration;
+        }
 
-    public void updateTimeTillDue(int secondsUntilDue){
-        this.secondsUntilDue = secondsUntilDue;
-        notifyDataSetChanged(); //Todo: update single view
+        listView.setMinMinutes(minDuration);
     }
 
     public void setTasks(List<Task> newTasks) {
@@ -139,32 +149,15 @@ public class TaskAdaptor extends BaseAdapter {
             }
         }
 
-        minutesOnActiveTasks = 0;
-        minutesOnAllTasks = 0;
-        minDuration = 1000;
-
-        // Get smallest task as base unit for layout heights
-        for (ViewTask t : tasks) {
-            if (t.duration < minDuration)
-                minDuration = t.duration;
-        }
-        for (ViewTask t : doneTasks) {
-            if (t.duration < minDuration)
-                minDuration = t.duration;
-        }
-
-
-        // Sort tasks by completion
-        //Collections.sort(tasks);
 
 
         // get minutes left on tasks
+        minutesOnActiveTasks = 0;
         for(ViewTask t : tasks){
-            t.startTime = minutesOnAllTasks;
-            minutesOnAllTasks += t.duration;
-            if(!t.completed)
-                minutesOnActiveTasks += t.duration;
+            minutesOnActiveTasks += t.duration;
         }
+
+        listView.setActiveMinutes(minutesOnActiveTasks);
 
         notifyDataSetChanged();
     }
