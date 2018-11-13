@@ -1,7 +1,6 @@
 package com.coltennye.punctual.db;
 
-import com.coltennye.punctual.deadline.tasks.ViewTask;
-import com.orm.SugarRecord;
+import com.coltennye.punctual.deadline.tasks.TaskView;
 
 import io.objectbox.annotation.Entity;
 import io.objectbox.annotation.Id;
@@ -49,7 +48,7 @@ public class Task{
 
     public void toggleComplete() {this.completed = !this.completed;}
 
-    public ViewTask toViewTask(){
-        return new ViewTask(id, name, duration, completed);
+    public TaskView toViewTask(){
+        return new TaskView(id, name, duration, completed);
     }
 }

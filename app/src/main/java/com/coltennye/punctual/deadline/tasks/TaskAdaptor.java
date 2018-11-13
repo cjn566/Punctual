@@ -9,7 +9,6 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import com.coltennye.punctual.R;
-import com.coltennye.punctual.TimeConverter;
 import com.coltennye.punctual.db.Task;
 import com.coltennye.punctual.views.MyListView;
 
@@ -25,10 +24,10 @@ public class TaskAdaptor extends BaseAdapter {
     private int minutesOnActiveTasks;
     private int minutesOnAllTasks;
     private int secondsUntilDue;
-    private ViewTask divider;
+    private TaskView divider;
     private View divView;
-    private List<ViewTask> tasks;
-    private List<ViewTask> doneTasks;
+    private List<TaskView> tasks;
+    private List<TaskView> doneTasks;
 
 
     public TaskAdaptor(Context context, MyListView listView){
@@ -36,7 +35,7 @@ public class TaskAdaptor extends BaseAdapter {
         tasks = new ArrayList<>();
         doneTasks = new ArrayList<>();
         baseHeight =  context.getResources().getDimensionPixelSize(R.dimen.shortest_task_height);
-        divider = new ViewTask(-1, "", 0, false);
+        divider = new TaskView(-1, "", 0, false);
     }
 
     private static class TaskViewHolder {
@@ -87,7 +86,7 @@ public class TaskAdaptor extends BaseAdapter {
                 view.setTag(holder);
             }
 
-            ViewTask task = (isActive? tasks.get(i) : doneTasks.get(i - numActive - 1));
+            TaskView task = (isActive? tasks.get(i) : doneTasks.get(i - numActive - 1));
 
             String txt = task.name;
 
@@ -123,12 +122,12 @@ public class TaskAdaptor extends BaseAdapter {
         // Get smallest task as base unit for layout heights
         minDuration = 1000;
         minutesOnAllTasks = 0;
-        for (ViewTask t : tasks) {
+        for (TaskView t : tasks) {
             minutesOnAllTasks += t.duration;
             if (t.duration < minDuration)
                 minDuration = t.duration;
         }
-        for (ViewTask t : doneTasks) {
+        for (TaskView t : doneTasks) {
             minutesOnAllTasks += t.duration;
             if (t.duration < minDuration)
                 minDuration = t.duration;
@@ -153,7 +152,7 @@ public class TaskAdaptor extends BaseAdapter {
 
         // get minutes left on tasks
         minutesOnActiveTasks = 0;
-        for(ViewTask t : tasks){
+        for(TaskView t : tasks){
             minutesOnActiveTasks += t.duration;
         }
 
@@ -170,7 +169,7 @@ public class TaskAdaptor extends BaseAdapter {
     }
 
     @Override
-    public ViewTask getItem(int i) {
+    public TaskView getItem(int i) {
         int size = tasks.size();
         if(i == size)
             return divider;

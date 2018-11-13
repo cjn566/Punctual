@@ -1,8 +1,8 @@
 package com.coltennye.punctual.deadline.tasks;
 
-public class ViewTask implements Comparable<ViewTask>{
+public class TaskView implements Comparable<TaskView>{
 
-    public ViewTask(long id, String name, int duration, boolean completed) {
+    public TaskView(long id, String name, int duration, boolean completed) {
         this.id = id;
         this.name = name;
         this.duration = duration;
@@ -16,7 +16,7 @@ public class ViewTask implements Comparable<ViewTask>{
     public boolean completed;
 
     @Override
-    public int compareTo(ViewTask t) {
+    public int compareTo(TaskView t) {
         if (this.completed == t.completed)
             return 0;
         return completed? 1:-1;

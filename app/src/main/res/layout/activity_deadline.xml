@@ -32,14 +32,19 @@
             android:textSize="10pt" />
     </LinearLayout>
 
-    <com.coltennye.punctual.views.MyListView android:id="@+id/lv_tasks_active"
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        app:layout_constraintTop_toBottomOf="@+id/timeContainer"
+        android:layout_marginTop="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        android:drawSelectorOnTop="false"/>
+        app:layout_constraintTop_toBottomOf="@+id/timeContainer">
+
+        <com.coltennye.punctual.views.ActiveTasksListView
+            android:id="@+id/lv_tasks_active"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+    </ScrollView>
 
 
     <android.support.design.widget.FloatingActionButton

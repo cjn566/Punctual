@@ -30,7 +30,9 @@ import com.coltennye.punctual.main.MainActivity;
 import com.coltennye.punctual.R;
 import com.coltennye.punctual.db.Deadline;
 import com.coltennye.punctual.db.Deadline_;
+import com.coltennye.punctual.views.ActiveTasksListView;
 import com.coltennye.punctual.views.MyListView;
+import com.coltennye.punctual.views.TaskView;
 
 import java.util.Calendar;
 import java.util.Locale;
@@ -44,13 +46,12 @@ public class DeadlineActivity extends AppCompatActivity {
     private final int REFRESH_UI_DELAY = 1000;
     private Handler intervalTimer;
     private Runnable intervalMethod;
-    private TaskAdaptor adaptor;
     //private int minutes;
     private long dueTime;
     private TextView timeLeft;
 
 
-    private MyListView listView;
+    private ActiveTasksListView listView;
     private Deadline deadline;
     private Box<Task> taskBox;
 
@@ -106,23 +107,14 @@ public class DeadlineActivity extends AppCompatActivity {
 
 
         listView = findViewById(R.id.lv_tasks_active);
-        adaptor = new TaskAdaptor(this, listView);
-        listView.setAdapter(adaptor);
-        adaptor.setTasks(deadline.tasks);
-        adaptor.notifyTasksChanged();
+        listView.setTasks(deadline.tasks);
+        listView.notifyTasksChanged();
+        listView.makeViews();
 
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        listView.setOnItemClickListener(new View.OnClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                toggleComplete(adaptor.getItemId(i));
-            }
-        });
-
-        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-
-            @Override
-            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
-                return editTask(deadline.tasks.get(i));
+            public void onClick(View view) {
+                toggleComplete(view.getId()); //Todo: make TaskView subclass of View to hold Task DB id.
             }
         });
 
@@ -255,7 +247,8 @@ public class DeadlineActivity extends AppCompatActivity {
         Task t =  deadline.tasks.getById(id);
         t.toggleComplete();
         taskBox.put(t);
-        adaptor.setTasks(deadline.tasks);
+        listView.setTasks(deadline.tasks);
+        listView.makeViews();
     }
 
     public void resetTasks(){
@@ -263,7 +256,8 @@ public class DeadlineActivity extends AppCompatActivity {
             t.setCompleted(false);
         }
         taskBox.put(deadline.tasks);
-        adaptor.setTasks(deadline.tasks);
+        listView.setTasks(deadline.tasks);
+        listView.makeViews();
     }
 
     private void goBack(){
@@ -296,7 +290,8 @@ public class DeadlineActivity extends AppCompatActivity {
 
                     case DialogInterface.BUTTON_NEGATIVE:
                         getDeadline();
-                        adaptor.setTasks(deadline.tasks);
+                        listView.setTasks(deadline.tasks);
+                        listView.makeViews();
                         break;
                 }
             }
@@ -316,7 +311,8 @@ public class DeadlineActivity extends AppCompatActivity {
                     @Override
                     public void onCancel(DialogInterface dialogInterface) {
                         getDeadline();
-                        adaptor.setTasks(deadline.tasks);
+                        listView.setTasks(deadline.tasks);
+                        listView.makeViews();
                     }
                 }).show();
     }
@@ -338,7 +334,8 @@ public class DeadlineActivity extends AppCompatActivity {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         addOrEditTask(task, dialogInterface);
-                        adaptor.setTasks(deadline.tasks);
+                        listView.setTasks(deadline.tasks);
+                        listView.makeViews();
                     }
                 })
                 .show();
@@ -360,8 +357,9 @@ public class DeadlineActivity extends AppCompatActivity {
         // Commit to DB, redraw UI
         task.deadline.setTarget(deadline);
         taskBox.put(task);
-        adaptor.setTasks(deadline.tasks);
-        adaptor.notifyTasksChanged();
+        listView.setTasks(deadline.tasks);
+        listView.notifyTasksChanged();
+        listView.makeViews();
     }
 
     @Override
