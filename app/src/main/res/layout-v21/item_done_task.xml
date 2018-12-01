@@ -1,21 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.coltennye.punctual.deadline.tasks.TaskView xmlns:android="http://schemas.android.com/apk/res/android"
 
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:clickable="true">
 
     <TextView
         android:id="@+id/task_text"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
-        android:layout_marginEnd="@dimen/task_right_pad"
+        android:layout_marginEnd="10dp"
         android:layout_marginBottom="1dp"
         android:layout_marginTop="1dp"
         android:gravity="center_vertical"
-        android:background="@drawable/layout_bg"
+        android:background="@drawable/done_task_background"
         android:textAlignment="center"
         />
 
 
-</LinearLayout>
+</com.coltennye.punctual.deadline.tasks.TaskView>

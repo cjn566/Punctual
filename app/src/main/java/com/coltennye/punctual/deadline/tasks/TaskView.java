@@ -1,24 +1,47 @@
 package com.coltennye.punctual.deadline.tasks;
 
-public class TaskView implements Comparable<TaskView>{
+import android.content.Context;
+import android.graphics.Paint;
+import android.support.annotation.Nullable;
+import android.util.AttributeSet;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
-    public TaskView(long id, String name, int duration, boolean completed) {
-        this.id = id;
-        this.name = name;
-        this.duration = duration;
-        this.completed = completed;
+import com.coltennye.punctual.R;
+import com.coltennye.punctual.db.Task;
+
+public class TaskView extends LinearLayout {
+
+    private long taskId;
+    private TextView text;
+
+    public TaskView(Context context, @Nullable AttributeSet attrs) {
+        super(context, attrs);
+        setClickable(true);
+        setLongClickable(true);
     }
 
-    public String name;
-    public long id;
-    public int duration;
-    public int startTime;
-    public boolean completed;
+    public void init(Task t, @Nullable OnClickListener taskOCL, @Nullable OnLongClickListener taskOLCL) {
+        this.taskId = t.id;
 
-    @Override
-    public int compareTo(TaskView t) {
-        if (this.completed == t.completed)
-            return 0;
-        return completed? 1:-1;
+        text = findViewById(R.id.task_text);
+        text.setText(t.getName());
+
+        if(taskOCL != null) setOnClickListener(taskOCL);
+        if(taskOLCL != null) setOnLongClickListener(taskOLCL);
     }
+
+    public void setStrike(boolean isStriked){
+        if (isStriked){
+            text.setPaintFlags(text.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+        }
+        else {
+            text.setPaintFlags(text.getPaintFlags() & ~Paint.STRIKE_THRU_TEXT_FLAG);
+        }
+    }
+
+    public long getTaskId() {
+        return taskId;
+    }
+
 }

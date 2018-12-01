@@ -13,10 +13,8 @@ import android.text.format.DateFormat;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.CompoundButton;
 import android.widget.EditText;
-import android.widget.ListView;
 import android.widget.NumberPicker;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -25,14 +23,11 @@ import android.widget.TimePicker;
 import com.coltennye.punctual.App;
 import com.coltennye.punctual.TimeConverter;
 import com.coltennye.punctual.db.Task;
-import com.coltennye.punctual.deadline.tasks.TaskAdaptor;
 import com.coltennye.punctual.main.MainActivity;
 import com.coltennye.punctual.R;
 import com.coltennye.punctual.db.Deadline;
 import com.coltennye.punctual.db.Deadline_;
-import com.coltennye.punctual.views.ActiveTasksListView;
-import com.coltennye.punctual.views.MyListView;
-import com.coltennye.punctual.views.TaskView;
+import com.coltennye.punctual.views.TasksScrollView;
 
 import java.util.Calendar;
 import java.util.Locale;
@@ -41,22 +36,20 @@ import io.objectbox.Box;
 import io.objectbox.BoxStore;
 import io.objectbox.query.Query;
 
-public class DeadlineActivity extends AppCompatActivity {
+public class DeadlineActivity extends AppCompatActivity{
 
-    private final int REFRESH_UI_DELAY = 1000;
+    private final int REFRESH_UI_DELAY = 5 * 1000;
     private Handler intervalTimer;
     private Runnable intervalMethod;
-    //private int minutes;
     private long dueTime;
     private TextView timeLeft;
 
 
-    private ActiveTasksListView listView;
+    private TasksScrollView tasksViewManager;
     private Deadline deadline;
     private Box<Task> taskBox;
 
     private Toolbar toolBar;
-    private Switch activeTogglerActionView;
     private MenuItem resetTasksMenuItem;
     private MenuItem editDeadlineMenuItem;
 
@@ -79,7 +72,7 @@ public class DeadlineActivity extends AppCompatActivity {
         taskBox = boxStore.boxFor(com.coltennye.punctual.db.Task.class);
         deadlineBox = boxStore.boxFor(com.coltennye.punctual.db.Deadline.class);
         deadlineQuery = deadlineBox.query().equal(Deadline_.__ID_PROPERTY, deadlineId).build();
-        deadline = deadlineQuery.findUnique();
+
 
 
 
@@ -105,18 +98,21 @@ public class DeadlineActivity extends AppCompatActivity {
 
 
 
+        // TODO Working here
 
-        listView = findViewById(R.id.lv_tasks_active);
-        listView.setTasks(deadline.tasks);
-        listView.notifyTasksChanged();
-        listView.makeViews();
 
-        listView.setOnItemClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                toggleComplete(view.getId()); //Todo: make TaskView subclass of View to hold Task DB id.
-            }
-        });
+        tasksViewManager = findViewById(R.id.tasks_scroller);
+        updateTasks();
+
+
+
+
+        // TODO End Working here
+
+
+
+
+
 
         // Set new task FAB listener
         findViewById(R.id.newTaskFAB).setOnClickListener(new View.OnClickListener() {
@@ -147,13 +143,13 @@ public class DeadlineActivity extends AppCompatActivity {
         setDueTime();
     }
 
-    @Override
+    @Override //TODO unfuck this
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.deadline_menu, menu);
 
         resetTasksMenuItem = menu.findItem(R.id.reset_tasks);
         editDeadlineMenuItem = menu.findItem(R.id.edit_deadline);
-        activeTogglerActionView = menu.findItem(R.id.menu_deadline_active_switch).getActionView().findViewById(R.id.active_switch);
+        Switch activeTogglerActionView = menu.findItem(R.id.menu_deadline_active_switch).getActionView().findViewById(R.id.active_switch);
         if(deadline.isActive()){
             editDeadlineMenuItem.setVisible(false);
             activeTogglerActionView.setChecked(true);
@@ -178,44 +174,44 @@ public class DeadlineActivity extends AppCompatActivity {
             case R.id.edit_deadline:
 
                 break;
-            case R.id.delete_deadline:
-
-
-                DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        switch (which){
-                            case DialogInterface.BUTTON_POSITIVE:
-
-                                BoxStore boxStore = ((App) getApplication()).getBoxStore();
-                                Box<Task> taskBox = boxStore.boxFor(com.coltennye.punctual.db.Task.class);
-                                taskBox.remove(deadline.tasks);
-
-                                deadlineBox.remove(deadline.id);
-                                goBack();
-
-                                break;
-
-                            case DialogInterface.BUTTON_NEGATIVE:
-                                //No button clicked
-                                break;
-                        }
-                    }
-                };
-
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setMessage("Are you sure?").setPositiveButton("Yes", dialogClickListener)
-                        .setNegativeButton("No", dialogClickListener).show();
-
-
-
         }
         return true;
     }
 
+    //Todo: move to main activity
+    private void deleteDeadline(){
 
-    public void setDueTime() {
 
+        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which){
+                    case DialogInterface.BUTTON_POSITIVE:
+
+                        BoxStore boxStore = ((App) getApplication()).getBoxStore();
+                        Box<Task> taskBox = boxStore.boxFor(com.coltennye.punctual.db.Task.class);
+                        taskBox.remove(deadline.tasks);
+
+                        deadlineBox.remove(deadline.id);
+                        goBack();
+
+                        break;
+
+                    case DialogInterface.BUTTON_NEGATIVE:
+                        //No button clicked
+                        break;
+                }
+            }
+        };
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Are you sure?").setPositiveButton("Yes", dialogClickListener)
+                .setNegativeButton("No", dialogClickListener).show();
+
+    }
+
+
+    private void setDueTime() {
         int mins = deadline.getMinute();
         Calendar c = Calendar.getInstance();
         int nowMinutes = TimeConverter.toMinutes(c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE));
@@ -239,16 +235,7 @@ public class DeadlineActivity extends AppCompatActivity {
         int secondsRemaining = (int) (dueTime - System.currentTimeMillis()) / (1000);
         int minutesRemaining = secondsRemaining / 60;
         timeLeft.setText("Time left: " + TimeConverter.timeRemainingString(minutesRemaining));
-        listView.setSeconds(secondsRemaining);
-    }
-
-    private void toggleComplete(long id){
-        if(id == -1) return;
-        Task t =  deadline.tasks.getById(id);
-        t.toggleComplete();
-        taskBox.put(t);
-        listView.setTasks(deadline.tasks);
-        listView.makeViews();
+        tasksViewManager.setSeconds(secondsRemaining);
     }
 
     public void resetTasks(){
@@ -256,8 +243,7 @@ public class DeadlineActivity extends AppCompatActivity {
             t.setCompleted(false);
         }
         taskBox.put(deadline.tasks);
-        listView.setTasks(deadline.tasks);
-        listView.makeViews();
+        updateTasks();
     }
 
     private void goBack(){
@@ -272,26 +258,18 @@ public class DeadlineActivity extends AppCompatActivity {
         invalidateOptionsMenu();
     }
 
-    public Deadline getDeadline(){
-        Deadline dl = deadlineQuery.findUnique();
-        return dl;
-    }
-
     private void addTask(){
-
         DialogInterface.OnClickListener ocl = new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                addOrEditTask(new Task(), dialogInterface);
+                addOrEditTaskFromDialogResults(new Task(), dialogInterface);
                 switch (i){
                     case DialogInterface.BUTTON_POSITIVE:
                         addTask();
                         break;
 
                     case DialogInterface.BUTTON_NEGATIVE:
-                        getDeadline();
-                        listView.setTasks(deadline.tasks);
-                        listView.makeViews();
+                        updateTasks();
                         break;
                 }
             }
@@ -305,16 +283,18 @@ public class DeadlineActivity extends AppCompatActivity {
         builder.setView(layout)
                 .setTitle("Add Task")
                 .setCancelable(true)
-                .setPositiveButton("Next", ocl)
+                .setPositiveButton("Add Another Task", ocl)
                 .setNegativeButton("Done", ocl)
                 .setOnCancelListener(new DialogInterface.OnCancelListener() {
                     @Override
                     public void onCancel(DialogInterface dialogInterface) {
-                        getDeadline();
-                        listView.setTasks(deadline.tasks);
-                        listView.makeViews();
+                        updateTasks();
                     }
                 }).show();
+    }
+
+    public boolean editTask(long taskId){
+        return editTask(deadline.tasks.getById(taskId));
     }
 
     private boolean editTask(final Task task){
@@ -333,16 +313,15 @@ public class DeadlineActivity extends AppCompatActivity {
                 .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        addOrEditTask(task, dialogInterface);
-                        listView.setTasks(deadline.tasks);
-                        listView.makeViews();
+                        addOrEditTaskFromDialogResults(task, dialogInterface);
+                        updateTasks();
                     }
                 })
                 .show();
         return true;
     }
 
-    private void addOrEditTask(Task task, DialogInterface DI){
+    private void addOrEditTaskFromDialogResults(Task task, DialogInterface DI){
         EditText et = ((AlertDialog) DI).findViewById(R.id.new_task_text);
         NumberPicker np = ((AlertDialog) DI).findViewById(R.id.new_task_minutes);
         String text = et.getText().toString();
@@ -357,9 +336,16 @@ public class DeadlineActivity extends AppCompatActivity {
         // Commit to DB, redraw UI
         task.deadline.setTarget(deadline);
         taskBox.put(task);
-        listView.setTasks(deadline.tasks);
-        listView.notifyTasksChanged();
-        listView.makeViews();
+        updateTasks();
+    }
+
+    private void updateDeadline() {
+        deadline = deadlineQuery.findUnique();
+    }
+
+    private void updateTasks(){
+        updateDeadline();
+        tasksViewManager.setTasks(deadline.tasks);
     }
 
     @Override
@@ -374,4 +360,10 @@ public class DeadlineActivity extends AppCompatActivity {
         intervalTimer.post(intervalMethod);
     }
 
+    public boolean setTaskCompletionState(long taskId, boolean isComplete) {
+        Task t =  deadline.tasks.getById(taskId);
+        t.setCompleted(isComplete);
+        taskBox.put(t);
+        return t.isCompleted();
+    }
 }

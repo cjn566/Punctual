@@ -32,19 +32,39 @@
             android:textSize="10pt" />
     </LinearLayout>
 
-    <ScrollView
+    <com.coltennye.punctual.views.TasksScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginTop="8dp"
+        android:id="@+id/tasks_scroller"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/timeContainer">
 
-        <com.coltennye.punctual.views.ActiveTasksListView
-            android:id="@+id/lv_tasks_active"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
-    </ScrollView>
+            <com.coltennye.punctual.views.ActiveTasksListView
+                android:id="@+id/lv_tasks_active"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingBottom="@dimen/divider_height"/>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginBottom="2dp"
+                android:background="@android:color/darker_gray"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:id="@+id/lv_tasks_done"/>
+        </LinearLayout>
+
+    </com.coltennye.punctual.views.TasksScrollView>
 
 
     <android.support.design.widget.FloatingActionButton

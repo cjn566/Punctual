@@ -66,6 +66,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
         updateDeadlines();
+
+
+        //DEBUG:
+        goToDeadline(deadlineAdaptor.getItem(0).id);
     }
 
     private void updateDeadlines(){

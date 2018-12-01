@@ -1,6 +1,12 @@
 package com.coltennye.punctual.db;
 
+import android.content.Context;
+import android.support.annotation.NonNull;
+import android.util.AttributeSet;
+
 import com.coltennye.punctual.deadline.tasks.TaskView;
+
+import javax.annotation.Nullable;
 
 import io.objectbox.annotation.Entity;
 import io.objectbox.annotation.Id;
@@ -48,7 +54,4 @@ public class Task{
 
     public void toggleComplete() {this.completed = !this.completed;}
 
-    public TaskView toViewTask(){
-        return new TaskView(id, name, duration, completed);
-    }
 }
