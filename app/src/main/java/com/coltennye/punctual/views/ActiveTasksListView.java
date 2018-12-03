@@ -2,11 +2,15 @@ package com.coltennye.punctual.views;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Picture;
+import android.graphics.Rect;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +27,8 @@ public class ActiveTasksListView extends LinearLayout {
 
     Paint mLinePaint;
     Paint mTxtPaint;
+    Paint tickMarkPaint;
+
     String mLabel;
     boolean showLine = false;
     private int maxSeconds;
@@ -35,9 +41,11 @@ public class ActiveTasksListView extends LinearLayout {
     private float mTextPad;
     private float mStrokeWidth;
     private float mRightPad;
+    private Picture ticksPicture;
     private OnClickListener OCL;
     private OnLongClickListener OLCL;
     protected LayoutInflater inflater;
+    private int dueMinute;
 
     public ActiveTasksListView(Context context, @Nullable AttributeSet attrs){
         super(context, attrs);
@@ -62,6 +70,10 @@ public class ActiveTasksListView extends LinearLayout {
         mTxtPaint.setTextSize(res.getDimensionPixelSize(R.dimen.min_rem_text_size));
         mTxtPaint.setTextAlign(Paint.Align.CENTER);
         mTextPad = res.getDimensionPixelSize(R.dimen.min_rem_text_pad);
+
+        tickMarkPaint = new Paint();
+        tickMarkPaint.setColor(Color.BLACK);
+        tickMarkPaint.setStrokeWidth(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1, res.getDisplayMetrics()));
     }
 
     public void setListeners(OnClickListener OCL, OnLongClickListener OLCL){
@@ -102,6 +114,57 @@ public class ActiveTasksListView extends LinearLayout {
     }
 
     @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldh);
+        makeTicksPicture(h, w);
+    }
+
+    private void makeTicksPicture(int h, int w){
+
+        float heightPerFiveMinutes = (heightPerMinutePx * 5);
+        int lineWidth = 25;
+
+        int hour = (dueMinute / 60) % 12;
+        int minutesFrom5 = (dueMinute % 5);
+        int numberOf5minutesFromNearestHour = ((dueMinute - minutesFrom5) % 60) / 5;
+        int numberOfFiveMinuteIncrements = (int)(h / heightPerFiveMinutes) - 1;
+        int indexStart = (12 - numberOf5minutesFromNearestHour);
+        int indexTarget = indexStart + numberOfFiveMinuteIncrements;
+
+
+        float drawY = minutesFrom5 * heightPerMinutePx;
+
+        ticksPicture = new Picture();
+        Canvas canvas = ticksPicture.beginRecording(w, h);
+
+        for(int i = indexStart; i < indexTarget; i++){
+            // Hour
+            if((i%12) == 0){
+                canvas.drawLine(w - (lineWidth * 3), drawY, w, drawY, tickMarkPaint);
+
+                String text = hour + ":00";
+                Rect bounds = new Rect();
+                mTxtPaint.getTextBounds(text, 0, text.length(), bounds);
+                canvas.drawText(text, w - (lineWidth * 3) - bounds.width() - 5, drawY + (bounds.height() / 2), mTxtPaint);
+                hour = (hour - 1) % 12;
+            }
+
+            // 15 Minute
+            else if((i%3) == 0){
+                canvas.drawLine(w - (lineWidth * 2), drawY, w, drawY, tickMarkPaint);
+            }
+
+            else {
+                canvas.drawLine(w - lineWidth, drawY, w, drawY, tickMarkPaint);
+            }
+
+            drawY += heightPerFiveMinutes;
+        }
+
+        ticksPicture.endRecording();
+    }
+
+    @Override
     public void removeView(View view) {
         super.removeView(view);
     }
@@ -120,10 +183,18 @@ public class ActiveTasksListView extends LinearLayout {
 
     @Override
     protected void dispatchDraw(Canvas canvas) {
+        ticksPicture.draw(canvas);
+
+        super.dispatchDraw(canvas);
+
         if(showLine){
             canvas.drawLine(0,mLineY, getWidth(), mLineY, mLinePaint);
-            canvas.drawText(mLabel, getWidth() - (mRightPad / 2), mLineY - (mTextPad  + (mStrokeWidth / 2)), mTxtPaint);
+            // canvas.drawText(mLabel, getWidth() - (mRightPad / 2), mLineY - (mTextPad  + (mStrokeWidth / 2)), mTxtPaint);
         }
-        super.dispatchDraw(canvas);
+    }
+
+    public void setDueMinute(int minute) {
+        this.dueMinute = minute;
+        this.makeTicksPicture(getHeight(), getWidth());
     }
 }

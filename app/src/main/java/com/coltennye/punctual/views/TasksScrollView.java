@@ -92,4 +92,7 @@ public class TasksScrollView extends ScrollView {
     public void setSeconds(int secondsRemaining) {
         activeTasks.setSeconds(secondsRemaining);
     }
+
+    public void setDueMinute(int minute) { activeTasks.setDueMinute(minute);
+    }
 }

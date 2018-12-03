@@ -45,6 +45,11 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@android:color/black"/>
+
             <com.coltennye.punctual.views.ActiveTasksListView
                 android:id="@+id/lv_tasks_active"
                 android:layout_width="match_parent"

@@ -228,6 +228,7 @@ public class DeadlineActivity extends AppCompatActivity{
         toolBar.setTitle(title);
 
         updateTime();
+        tasksViewManager.setDueMinute(deadline.getMinute());
 
     }
 
