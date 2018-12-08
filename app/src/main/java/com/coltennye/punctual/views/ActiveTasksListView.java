@@ -189,7 +189,7 @@ public class ActiveTasksListView extends LinearLayout {
 
         if(showLine){
             canvas.drawLine(0,mLineY, getWidth(), mLineY, mLinePaint);
-            // canvas.drawText(mLabel, getWidth() - (mRightPad / 2), mLineY - (mTextPad  + (mStrokeWidth / 2)), mTxtPaint);
+            //canvas.drawText(mLabel, getWidth() - (mRightPad / 2), mLineY - (mTextPad  + (mStrokeWidth / 2)), mTxtPaint);
         }
     }
 

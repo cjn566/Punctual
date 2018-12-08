@@ -1,11 +1,15 @@
 package com.coltennye.punctual.deadline;
 
+import android.app.AlarmManager;
+import android.app.Notification;
 import android.app.TimePickerDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.NavUtils;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationManagerCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -229,6 +233,14 @@ public class DeadlineActivity extends AppCompatActivity{
 
         updateTime();
         tasksViewManager.setDueMinute(deadline.getMinute());
+
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "NOOOO");
+        builder.setContentTitle("TEST")
+                .setContentText(deadline.getMinute() + "")
+        .setSmallIcon(R.drawable.ic_launcher);
+
+        NotificationManagerCompat.from(this).notify(1, builder.build());
 
     }
 

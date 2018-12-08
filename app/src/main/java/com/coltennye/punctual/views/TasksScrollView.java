@@ -1,9 +1,16 @@
 package com.coltennye.punctual.views;
 
 import android.content.Context;
+import android.transition.AutoTransition;
+import android.transition.Fade;
+import android.transition.Scene;
+import android.transition.Transition;
+import android.transition.TransitionManager;
+import android.transition.TransitionValues;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 
@@ -22,6 +29,7 @@ public class TasksScrollView extends ScrollView {
     private LinearLayout doneTasks;
     protected LayoutInflater inflater;
     private DeadlineActivity context;
+    private ViewGroup that;
 
     public TasksScrollView(final Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -29,7 +37,7 @@ public class TasksScrollView extends ScrollView {
 
         inflater = LayoutInflater.from(context);
         this.context = (DeadlineActivity) context;
-
+        that = this;
 
     }
 
@@ -46,9 +54,14 @@ public class TasksScrollView extends ScrollView {
         activeToCompleteOCL = new OnClickListener() {
             @Override
             public void onClick(View view) {
+
+
                 context.setTaskCompletionState(((TaskView)view).getTaskId(), true);
                 doneTasks.getChildAt(activeTasks.indexOfChild(view)).setVisibility(VISIBLE);
                 view.setVisibility(GONE);
+
+
+                TransitionManager.go(new Scene(that));
             }
         };
 
@@ -58,6 +71,9 @@ public class TasksScrollView extends ScrollView {
                 context.setTaskCompletionState(((TaskView)view).getTaskId(), false);
                 activeTasks.getChildAt(doneTasks.indexOfChild(view)).setVisibility(VISIBLE);
                 view.setVisibility(GONE);
+
+
+                TransitionManager.go(new Scene(that));
             }
         };
 
