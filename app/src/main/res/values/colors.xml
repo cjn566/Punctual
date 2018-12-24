@@ -3,5 +3,9 @@
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
-    <color name="taskActiveOnTime">#6d126c2c</color>
+
+    // Deadline
+    <color name="actionbar_deadline">#e1e1e1</color>
+        // Time left and tick marks
+    <color name="tick_marks">#000000</color>
 </resources>

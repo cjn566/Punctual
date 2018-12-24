@@ -6,19 +6,19 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.NavUtils;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.text.format.DateFormat;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.EditText;
-import android.widget.NumberPicker;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.TimePicker;
+import android.widget.Toast;
 
 import com.coltennye.punctual.App;
 import com.coltennye.punctual.TimeConverter;
@@ -27,25 +27,30 @@ import com.coltennye.punctual.main.MainActivity;
 import com.coltennye.punctual.R;
 import com.coltennye.punctual.db.Deadline;
 import com.coltennye.punctual.db.Deadline_;
+import com.coltennye.punctual.views.ActiveTasksListView;
 import com.coltennye.punctual.views.TasksScrollView;
 
 import java.util.Calendar;
-import java.util.Locale;
 
 import io.objectbox.Box;
 import io.objectbox.BoxStore;
 import io.objectbox.query.Query;
+import mobi.upod.timedurationpicker.TimeDurationPicker;
 
 public class DeadlineActivity extends AppCompatActivity{
 
     private final int REFRESH_UI_DELAY = 5 * 1000;
     private Handler intervalTimer;
     private Runnable intervalMethod;
-    private long dueTime;
-    private TextView timeLeft;
+
+    private long dueDateMillis;
+    private TextView tv_dueTime;
+    private TextView tv_deadlineName;
 
 
+    private ActionBar actionBar;
     private TasksScrollView tasksViewManager;
+    private ActiveTasksListView activeTasksView;
     private Deadline deadline;
     private Box<Task> taskBox;
 
@@ -59,12 +64,7 @@ public class DeadlineActivity extends AppCompatActivity{
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-
-
         setContentView(R.layout.activity_deadline);
-
-
 
         Intent intent = getIntent();
         long deadlineId = intent.getLongExtra(MainActivity.EXTRA_DEADLINE_ID, 0);
@@ -73,18 +73,14 @@ public class DeadlineActivity extends AppCompatActivity{
         deadlineBox = boxStore.boxFor(com.coltennye.punctual.db.Deadline.class);
         deadlineQuery = deadlineBox.query().equal(Deadline_.__ID_PROPERTY, deadlineId).build();
 
-
-
-
-
-
-        setSupportActionBar(toolBar);
         toolBar = findViewById(R.id.toolbar_deadline);
+        setSupportActionBar(toolBar);
+        actionBar = getSupportActionBar();
 
 
-
-
-
+        actionBar.setDisplayShowTitleEnabled(false);
+        actionBar.setDisplayHomeAsUpEnabled(true);
+        //actionBar.set
 
         intervalTimer = new Handler();
         intervalMethod = new Runnable() {
@@ -95,24 +91,12 @@ public class DeadlineActivity extends AppCompatActivity{
             }
         };
 
-
-
-
-        // TODO Working here
-
-
         tasksViewManager = findViewById(R.id.tasks_scroller);
+        activeTasksView = findViewById(R.id.lv_tasks_active);
         updateTasks();
 
-
-
-
-        // TODO End Working here
-
-
-
-
-
+        tv_deadlineName = findViewById(R.id.deadline_name);
+        tv_deadlineName.setText(deadline.getName());
 
         // Set new task FAB listener
         findViewById(R.id.newTaskFAB).setOnClickListener(new View.OnClickListener() {
@@ -122,20 +106,20 @@ public class DeadlineActivity extends AppCompatActivity{
             }
         });
 
-
-        timeLeft = findViewById(R.id.timeLeft);
-        timeLeft.setOnClickListener(new View.OnClickListener() {
+        tv_dueTime = findViewById(R.id.due_time);
+        tv_dueTime.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 TimePickerDialog mTimePicker;
                 mTimePicker = new TimePickerDialog(DeadlineActivity.this, new TimePickerDialog.OnTimeSetListener() {
                     @Override
                     public void onTimeSet(TimePicker timePicker, int selectedHour, int selectedMinute) {
-                        deadline.setMinute(TimeConverter.toMinutes(selectedHour, selectedMinute));
+                        deadline.setHour(selectedHour);
+                        deadline.setMinute(selectedMinute);
                         deadlineBox.put(deadline);
                         setDueTime();
                     }
-                },TimeConverter.getHour(deadline.getMinute()),TimeConverter.getMinute(deadline.getMinute()), DateFormat.is24HourFormat(getApplicationContext()));
+                },deadline.getHour(), deadline.getMinute(), TimeConverter.is24hr());
                 mTimePicker.setTitle("Deadline Due Time:");
                 mTimePicker.show();
             }
@@ -168,6 +152,8 @@ public class DeadlineActivity extends AppCompatActivity{
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
+            case android.R.id.home:
+                NavUtils.navigateUpFromSameTask(this);
             case R.id.reset_tasks:
                 resetTasks();
                 break;
@@ -212,31 +198,28 @@ public class DeadlineActivity extends AppCompatActivity{
 
 
     private void setDueTime() {
-        int mins = deadline.getMinute();
+        int dueMinute = deadline.getMinute();
+        int dueHour = deadline.getHour();
         Calendar c = Calendar.getInstance();
-        int nowMinutes = TimeConverter.toMinutes(c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE));
-        c.set(Calendar.HOUR_OF_DAY, TimeConverter.getHour(mins));
-        c.set(Calendar.MINUTE, TimeConverter.getMinute(mins));
-        if(nowMinutes > mins){
+        long now = c.getTimeInMillis();
+        c.set(Calendar.HOUR_OF_DAY, dueHour);
+        c.set(Calendar.MINUTE, dueMinute);
+        if(now > c.getTimeInMillis()){
             c.add(Calendar.DAY_OF_MONTH, 1);
         }
-        dueTime = c.getTimeInMillis();
 
-        java.text.DateFormat df = java.text.DateFormat.getTimeInstance(java.text.DateFormat.SHORT, Locale.US);
-        String dueTime = df.format(c.getTime());
-        String title = deadline.getName() + " @ " + dueTime;
-        toolBar.setTitle(title);
-
+        tv_dueTime.setText(TimeConverter.timeOfDayString(c.getTime()));
+        dueDateMillis = c.getTimeInMillis();
         updateTime();
-        tasksViewManager.setDueMinute(deadline.getMinute());
-
     }
 
     private void updateTime(){
-        int secondsRemaining = (int) (dueTime - System.currentTimeMillis()) / (1000);
-        int minutesRemaining = secondsRemaining / 60;
-        timeLeft.setText("Time left: " + TimeConverter.timeRemainingString(minutesRemaining));
-        tasksViewManager.setSeconds(secondsRemaining);
+        int minutesRemaining = (int) (dueDateMillis - System.currentTimeMillis()) / (1000 * 60);
+        if(minutesRemaining < 0){
+            setDueTime();
+            return;
+        }
+        activeTasksView.setMinutesRemaining(minutesRemaining);
     }
 
     public void resetTasks(){
@@ -265,10 +248,12 @@ public class DeadlineActivity extends AppCompatActivity{
             public void onClick(DialogInterface dialogInterface, int i) {
                 addOrEditTaskFromDialogResults(new Task(), dialogInterface);
                 switch (i){
+                    // Add another task
                     case DialogInterface.BUTTON_POSITIVE:
                         addTask();
                         break;
 
+                    // Done adding tasks
                     case DialogInterface.BUTTON_NEGATIVE:
                         updateTasks();
                         break;
@@ -295,17 +280,15 @@ public class DeadlineActivity extends AppCompatActivity{
     }
 
     public boolean editTask(long taskId){
-        return editTask(deadline.tasks.getById(taskId));
-    }
+        final Task task = deadline.tasks.getById(taskId);
 
-    private boolean editTask(final Task task){
         // Get dialog layout
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         View layout = getLayoutInflater().inflate(R.layout.dlg_new_task,null);
 
         // Set UI values (If task is being edited)
         ((EditText)layout.findViewById(R.id.new_task_text)).setText(task.getName());
-        ((NumberPicker)layout.findViewById(R.id.new_task_minutes)).setValue(task.getDuration());
+        ((TimeDurationPicker)layout.findViewById(R.id.timeDurationInput)).setDuration(task.getDuration() * 60 * 1000);
 
         // Show Dialog for editing or making a new Task
         builder.setView(layout)
@@ -317,18 +300,19 @@ public class DeadlineActivity extends AppCompatActivity{
                         addOrEditTaskFromDialogResults(task, dialogInterface);
                         updateTasks();
                     }
-                })
-                .show();
+                }).show();
         return true;
     }
 
     private void addOrEditTaskFromDialogResults(Task task, DialogInterface DI){
         EditText et = ((AlertDialog) DI).findViewById(R.id.new_task_text);
-        NumberPicker np = ((AlertDialog) DI).findViewById(R.id.new_task_minutes);
+        long duration = ((TimeDurationPicker)(((AlertDialog) DI).findViewById(R.id.timeDurationInput))).getDuration();
         String text = et.getText().toString();
-        if(text == "")
+        if(text.isEmpty()) {
+            Toast.makeText(this, "No name, task not saved/changed", Toast.LENGTH_LONG).show();
             return;
-        int minutes = np.getValue();
+        }
+        int minutes = (int)(duration / (60 * 1000));
 
         // Set Task values
         task.setName(text);
@@ -366,5 +350,9 @@ public class DeadlineActivity extends AppCompatActivity{
         t.setCompleted(isComplete);
         taskBox.put(t);
         return t.isCompleted();
+    }
+
+    public Long getDueDate() {
+        return dueDateMillis;
     }
 }

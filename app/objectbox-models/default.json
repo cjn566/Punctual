@@ -5,7 +5,7 @@
   "entities": [
     {
       "id": "1:4886684600108776135",
-      "lastPropertyId": "5:4206075923108556945",
+      "lastPropertyId": "6:3089355236705260910",
       "name": "Deadline",
       "properties": [
         {
@@ -23,6 +23,10 @@
         {
           "id": "5:4206075923108556945",
           "name": "active"
+        },
+        {
+          "id": "6:3089355236705260910",
+          "name": "hour"
         }
       ],
       "relations": []

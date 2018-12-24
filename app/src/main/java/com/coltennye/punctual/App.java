@@ -16,6 +16,7 @@ public class App extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        TimeConverter.init(this);
         boxStore = MyObjectBox.builder().androidContext(App.this).build();
         //boxStore.close();
         //boxStore.deleteAllFiles();
@@ -24,7 +25,7 @@ public class App extends Application {
         }
 
 
-        Log.d("com.coltennye.punctual.App", "Using ObjectBox " + BoxStore.getVersion() + " (" + BoxStore.getVersionNative() + ")");
+        Log.d("punctual.App", "Using ObjectBox " + BoxStore.getVersion() + " (" + BoxStore.getVersionNative() + ")");
     }
 
 

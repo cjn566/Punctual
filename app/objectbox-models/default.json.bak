@@ -17,10 +17,6 @@
           "name": "name"
         },
         {
-          "id": "3:2361681698599079201",
-          "name": "hour"
-        },
-        {
           "id": "4:7282885377510340243",
           "name": "minute"
         },
@@ -70,7 +66,8 @@
   "retiredEntityUids": [],
   "retiredIndexUids": [],
   "retiredPropertyUids": [
-    5221174909141373784
+    5221174909141373784,
+    2361681698599079201
   ],
   "retiredRelationUids": [
     3041608796486798152

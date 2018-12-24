@@ -13,6 +13,7 @@ public class Deadline implements java.io.Serializable {
     public long id;
     private String name;
     private Integer minute;
+    private Integer hour;
 
 
     private boolean active;
@@ -25,11 +26,17 @@ public class Deadline implements java.io.Serializable {
     public void setActive(boolean active) {        this.active = active;    }
 
     public Integer getMinute() {
-        return minute;
+        return this.minute;
+    }
+    public Integer getHour() {
+        return this.hour;
     }
 
     public void setMinute(Integer minute) {
         this.minute = minute;
+    }
+    public void setHour(Integer hour) {
+        this.hour = hour;
     }
 
     public String getName(){

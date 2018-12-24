@@ -10,7 +10,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginStart="10dp"
-        android:layout_marginEnd="@dimen/task_right_pad"
         android:layout_marginBottom="1dp"
         android:layout_marginTop="1dp"
         android:gravity="center_vertical"
