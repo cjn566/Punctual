@@ -1,4 +1,4 @@
-package com.coltennye.punctual.views;
+package com.coltennye.punctual.deadline;
 
 import android.content.Context;
 import android.content.res.Resources;
@@ -8,48 +8,33 @@ import android.graphics.Paint;
 import android.graphics.Picture;
 import android.graphics.Rect;
 import android.support.annotation.Nullable;
-import android.text.format.DateFormat;
 import android.util.AttributeSet;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.LinearLayout;
 
 import com.coltennye.punctual.R;
 import com.coltennye.punctual.TimeConverter;
-import com.coltennye.punctual.db.Task;
 import com.coltennye.punctual.deadline.DeadlineActivity;
-import com.coltennye.punctual.deadline.tasks.TaskView;
 
 import java.util.Calendar;
-import java.util.List;
+import java.util.Date;
 
-public class ActiveTasksListView extends LinearLayout {
+public class TimeBackgroundView extends View {
 
     Paint mLinePaint;
     Paint mTxtPaint;
     Paint tickMarkPaint;
 
-    private DeadlineActivity dlActivity;
-
     String mLabel;
     boolean showLine = false;
-    int hoursCycle;
-    private int activeDuration;
-    private int mCurrentTaskMinutes;
-    private float minMinutesHeightPx;
-    private float heightPerMinutePx;
-    private final float minuteTickWidth;
+
+    private float minuteTickWidth;
     private float mLineY;
     private float mTextPad;
     private float mStrokeWidth;
-    private float taskRightMargin;
     private Picture ticksPicture;
-    private OnClickListener OCL;
-    private OnLongClickListener OLCL;
-    protected LayoutInflater inflater;
-    private int dueMinuteOfDay;
+    private float minMinutesHeightPx;
+
     private float[][] showOnMinimumPixelHeight = new float[2][5];
-    boolean is12hour;
 
     private static final int TICK = 0;
     private static final int TIME = 1;
@@ -59,14 +44,17 @@ public class ActiveTasksListView extends LinearLayout {
     private static final int THIRTY = 3;
     private static final int HOUR = 4;
 
-    public ActiveTasksListView(Context context, @Nullable AttributeSet attrs){
+    private float heightPerMinutePx;
+
+    private DeadlineActivity dlActivity;
+
+
+    public TimeBackgroundView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
 
-        inflater = LayoutInflater.from(context);
-        this.setOrientation(VERTICAL);
-
-        is12hour = !DateFormat.is24HourFormat(context);
-        hoursCycle = is12hour? 24 : 12;
+        if(context.getClass() == DeadlineActivity.class){
+            dlActivity = (DeadlineActivity) context;
+        }
 
         Resources res = getResources();
 
@@ -74,17 +62,17 @@ public class ActiveTasksListView extends LinearLayout {
         for(int i = 0; i < 2; i++){
             for(int j = 0; j < 5; j++){
                 resID = (i==TICK)?
-                    (j==MINUTE?     R.dimen.tick_min_height_break_minute :
-                     j==FIVE?       R.dimen.tick_min_height_break_five:
-                     j==FIFTEEN?    R.dimen.tick_min_height_break_fifteen :
-                     j==THIRTY?     R.dimen.tick_min_height_break_thirty :
-                                    R.dimen.tick_min_height_break_hour
-                    ):
-                    (j==MINUTE?     R.dimen.time_min_height_break_minute :
-                     j==FIVE?       R.dimen.time_min_height_break_five:
-                     j==FIFTEEN?    R.dimen.time_min_height_break_fifteen :
-                     j==THIRTY?     R.dimen.time_min_height_break_thirty :
-                                    R.dimen.time_min_height_break_hour);
+                        (j==MINUTE?     R.dimen.tick_min_height_break_minute :
+                                j==FIVE?       R.dimen.tick_min_height_break_five:
+                                        j==FIFTEEN?    R.dimen.tick_min_height_break_fifteen :
+                                                j==THIRTY?     R.dimen.tick_min_height_break_thirty :
+                                                        R.dimen.tick_min_height_break_hour
+                        ):
+                        (j==MINUTE?     R.dimen.time_min_height_break_minute :
+                                j==FIVE?       R.dimen.time_min_height_break_five:
+                                        j==FIFTEEN?    R.dimen.time_min_height_break_fifteen :
+                                                j==THIRTY?     R.dimen.time_min_height_break_thirty :
+                                                        R.dimen.time_min_height_break_hour);
 
                 showOnMinimumPixelHeight[i][j] = res.getDimensionPixelSize(resID);
             }
@@ -118,58 +106,14 @@ public class ActiveTasksListView extends LinearLayout {
 
         //Rect bounds = new Rect();
         //mTxtPaint.measureText("12:55 PM");
-        taskRightMargin = mTxtPaint.measureText("12:55 PM") + res.getDimensionPixelSize(R.dimen.min_rem_text_pad)*2;
+        //taskRightMargin = mTxtPaint.measureText("12:55 PM") + res.getDimensionPixelSize(R.dimen.min_rem_text_pad)*2;
 
     }
 
-    public void setListeners(DeadlineActivity context, OnClickListener OCL, OnLongClickListener OLCL){
-        this.OCL = OCL;
-        this.OLCL = OLCL;
-        this.dlActivity = context;
-    }
-
-    public void addTasks(List<Task> tasks){
-        removeAllViews();
-
-        if(tasks.size() <= 0) return;
-        int minDuration = 1000, d;
-        activeDuration = 0;
-        mCurrentTaskMinutes = tasks.get(tasks.size() - 1).getDuration();
-
-        for(Task t : tasks) {
-            d = t.getDuration();
-            activeDuration += d;
-            if (d < minDuration) {
-                minDuration = d;
-            }
-        }
-
-        heightPerMinutePx = minMinutesHeightPx / minDuration;
-
-        for(Task t : tasks) {
-            TaskView child = (TaskView) inflater.inflate(R.layout.item_active_task, this , false);
-            child.init(t, OCL, OLCL);
-            LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams)child.getLayoutParams();
-            lp.rightMargin = (int)taskRightMargin;
-            lp.height = (int) (t.getDuration() * heightPerMinutePx);
-            child.setLayoutParams(lp);
-            child.setVisibility(t.isCompleted()? GONE : VISIBLE);
-            addView(child);
-        }
-
-
-        requestLayout();
-    }
-
-    @Override
-    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-        super.onSizeChanged(w, h, oldw, oldh);
-        makeTicksPicture(h, w);
-    }
-
-
-
-    private void makeTicksPicture(int h, int w) {
+    public void setParams(float heightPerMinutePx, int totalMinutes, int currentTaskMinutes, long dueDate) {
+        this.heightPerMinutePx = heightPerMinutePx;
+        int h = getHeight();
+        int w = getWidth();
         if (h == 0) return; // todo prevent the call in the first place?
 
         int showTickOnLevel =
@@ -188,9 +132,9 @@ public class ActiveTasksListView extends LinearLayout {
         int level;
 
         Calendar endTime = Calendar.getInstance();
-        endTime.setTimeInMillis(dlActivity.getDueDate());
+        endTime.setTimeInMillis(dueDate);
         Calendar startTime = (Calendar) endTime.clone();
-        startTime.add(Calendar.MINUTE, -(activeDuration));
+        startTime.add(Calendar.MINUTE, -(totalMinutes));
         int minute;
 
         ticksPicture = new Picture();
@@ -247,26 +191,11 @@ public class ActiveTasksListView extends LinearLayout {
     }
 
     @Override
-    public void removeView(View view) { //todo: why did I start to override this?
-        super.removeView(view);
-    }
-
-    public void setMinutesRemaining(int minutes){
-        showLine = (minutes < activeDuration);
-        if (!showLine) return;
-        mLabel = (minutes) + "m";
-        mLineY = (minutes * heightPerMinutePx) - (mStrokeWidth / 2);
-        invalidate();
-    }
-
-    @Override
     protected void dispatchDraw(Canvas canvas) {
-        ticksPicture.draw(canvas);
-
+        if(ticksPicture != null) ticksPicture.draw(canvas);
         super.dispatchDraw(canvas);
-
         if(showLine){
-            canvas.drawLine(0,mLineY, getWidth(), mLineY, mLinePaint);
+            //    canvas.drawLine(0,mLineY, getWidth(), mLineY, mLinePaint);
             // canvas.drawText(mLabel, getWidth() - (mRightPad / 2), mLineY - (mTextPad  + (mStrokeWidth / 2)), mTxtPaint);
         }
     }
