@@ -8,53 +8,75 @@
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar_deadline"
         android:layout_width="match_parent"
-        android:layout_height="?android:attr/actionBarSize"
-        android:background="@color/colorPrimary"
-        android:elevation="4dp"
+        android:layout_height="40dp"
+        android:background="#123456"
         android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light">
     </android.support.v7.widget.Toolbar>
 
-    <LinearLayout
+    <View
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/timeContainer"
-        android:orientation="horizontal"
-        app:layout_constraintTop_toBottomOf="@+id/toolbar_deadline">
+        android:layout_height="1dp"
+        android:background="#7e7e7e"
+        app:layout_constraintTop_toBottomOf="@id/toolbar_deadline"/>
 
-        <TextView
-            android:id="@+id/timeLeft"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:ems="10"
-            android:gravity="center_horizontal"
-            android:textSize="10pt" />
-    </LinearLayout>
-
-    <com.coltennye.punctual.views.TasksScrollView
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginTop="8dp"
         android:id="@+id/tasks_scroller"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/timeContainer">
+        app:layout_constraintTop_toBottomOf="@+id/toolbar_deadline">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="@android:color/black"/>
 
-            <com.coltennye.punctual.views.ActiveTasksListView
-                android:id="@+id/lv_tasks_active"
+            <android.support.constraint.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingBottom="@dimen/divider_height"/>
+                android:padding="5dp"
+                android:id="@+id/deadline_header">
+
+                <TextView
+                    android:id="@+id/deadline_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    android:textSize="10pt" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/due_time"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintRight_toRightOf="parent"
+                    />
+
+            </android.support.constraint.ConstraintLayout>
+
+            <android.support.constraint.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/active_tasks_manager">
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="500dp"
+                    android:background="@android:color/holo_green_light"
+                    android:id="@+id/time_background"
+                    app:layout_constraintTop_toTopOf="parent"/>
+
+                <LinearLayout
+                    android:id="@+id/lv_tasks_active"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintBottom_toBottomOf="@id/time_background"
+                    android:orientation="vertical"
+                    android:background="@null"
+                    android:paddingBottom="@dimen/after_list_padding"/>
+
+            </android.support.constraint.ConstraintLayout>
 
             <View
                 android:layout_width="match_parent"
@@ -69,7 +91,7 @@
                 android:id="@+id/lv_tasks_done"/>
         </LinearLayout>
 
-    </com.coltennye.punctual.views.TasksScrollView>
+    </ScrollView>
 
 
     <android.support.design.widget.FloatingActionButton

@@ -69,7 +69,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         //DEBUG:
-        goToDeadline(deadlineAdaptor.getItem(0).id);
+        //goToDeadline(deadlineAdaptor.getItem(0).id);
     }
 
     private void updateDeadlines(){
@@ -97,7 +97,8 @@ public class MainActivity extends AppCompatActivity {
                         String text = et.getText().toString();
                         Deadline dl = new Deadline();
                         dl.setName(text);
-                        dl.setMinute(60*8);
+                        dl.setHour(8);
+                        dl.setMinute(0);
                         long id = deadlineBox.put(dl);
                         updateDeadlines();
                         goToDeadline(id);

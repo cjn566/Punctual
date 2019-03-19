@@ -12,7 +12,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar"
-        tools:replace="android:icon,android:theme">
+        tools:replace="android:icon,android:theme"
+        tools:ignore="GoogleAppIndexingWarning">
         <activity android:name=".main.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -23,7 +24,7 @@
         <activity
             android:name=".deadline.DeadlineActivity"
             android:label="@string/title_activity_deadline"
-            android:parentActivityName=".main.MainActivity"></activity>
+            android:parentActivityName=".main.MainActivity" />
     </application>
 
 </manifest>

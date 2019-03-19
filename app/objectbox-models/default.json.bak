@@ -5,7 +5,7 @@
   "entities": [
     {
       "id": "1:4886684600108776135",
-      "lastPropertyId": "5:4206075923108556945",
+      "lastPropertyId": "6:3089355236705260910",
       "name": "Deadline",
       "properties": [
         {
@@ -17,16 +17,16 @@
           "name": "name"
         },
         {
-          "id": "3:2361681698599079201",
-          "name": "hour"
-        },
-        {
           "id": "4:7282885377510340243",
           "name": "minute"
         },
         {
           "id": "5:4206075923108556945",
           "name": "active"
+        },
+        {
+          "id": "6:3089355236705260910",
+          "name": "hour"
         }
       ],
       "relations": []
@@ -70,7 +70,8 @@
   "retiredEntityUids": [],
   "retiredIndexUids": [],
   "retiredPropertyUids": [
-    5221174909141373784
+    5221174909141373784,
+    2361681698599079201
   ],
   "retiredRelationUids": [
     3041608796486798152
