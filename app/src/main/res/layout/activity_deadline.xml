@@ -60,7 +60,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/active_tasks_manager">
-                <com.coltennye.punctual.deadline.TimeBackgroundView
+                <View
                     android:layout_width="match_parent"
                     android:layout_height="500dp"
                     android:background="@android:color/holo_green_light"
@@ -71,10 +71,10 @@
                     android:id="@+id/lv_tasks_active"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="@id/time_background"
                     android:orientation="vertical"
                     android:background="@null"
-                    android:paddingBottom="@dimen/divider_height"/>
+                    android:paddingBottom="@dimen/after_list_padding"/>
 
             </android.support.constraint.ConstraintLayout>
 

@@ -7,6 +7,8 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Picture;
 import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.PictureDrawable;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.view.View;
@@ -58,25 +60,16 @@ public class TimeBackgroundView extends View {
 
         Resources res = getResources();
 
-        int resID;
-        for(int i = 0; i < 2; i++){
-            for(int j = 0; j < 5; j++){
-                resID = (i==TICK)?
-                        (j==MINUTE?     R.dimen.tick_min_height_break_minute :
-                                j==FIVE?       R.dimen.tick_min_height_break_five:
-                                        j==FIFTEEN?    R.dimen.tick_min_height_break_fifteen :
-                                                j==THIRTY?     R.dimen.tick_min_height_break_thirty :
-                                                        R.dimen.tick_min_height_break_hour
-                        ):
-                        (j==MINUTE?     R.dimen.time_min_height_break_minute :
-                                j==FIVE?       R.dimen.time_min_height_break_five:
-                                        j==FIFTEEN?    R.dimen.time_min_height_break_fifteen :
-                                                j==THIRTY?     R.dimen.time_min_height_break_thirty :
-                                                        R.dimen.time_min_height_break_hour);
+        showOnMinimumPixelHeight[TICK][MINUTE] = res.getDimensionPixelSize(R.dimen.tick_min_height_break_minute);
+        showOnMinimumPixelHeight[TICK][FIVE] = res.getDimensionPixelSize(R.dimen.tick_min_height_break_five);
+        showOnMinimumPixelHeight[TICK][FIFTEEN] = res.getDimensionPixelSize(R.dimen.tick_min_height_break_fifteen);
+        showOnMinimumPixelHeight[TICK][THIRTY] = res.getDimensionPixelSize(R.dimen.tick_min_height_break_thirty);
 
-                showOnMinimumPixelHeight[i][j] = res.getDimensionPixelSize(resID);
-            }
-        }
+        showOnMinimumPixelHeight[TIME][MINUTE] = res.getDimensionPixelSize(R.dimen.time_min_height_break_minute);
+        showOnMinimumPixelHeight[TIME][FIVE] = res.getDimensionPixelSize(R.dimen.time_min_height_break_five);
+        showOnMinimumPixelHeight[TIME][FIFTEEN] = res.getDimensionPixelSize(R.dimen.time_min_height_break_fifteen);
+        showOnMinimumPixelHeight[TIME][THIRTY] = res.getDimensionPixelSize(R.dimen.time_min_height_break_thirty);
+
 
         minMinutesHeightPx =    res.getDimensionPixelSize(R.dimen.shortest_task_height);
         mStrokeWidth =          res.getDimensionPixelSize(R.dimen.due_line_thickness);
@@ -110,36 +103,32 @@ public class TimeBackgroundView extends View {
 
     }
 
-    public void setParams(float heightPerMinutePx, int totalMinutes, int currentTaskMinutes, long dueDate) {
-        this.heightPerMinutePx = heightPerMinutePx;
-        int h = getHeight();
+    public void setParams(int heightPerMinutePx, int totalMinutes, int currentTaskMinutes, long dueDate) {
         int w = getWidth();
+        int h = heightPerMinutePx * totalMinutes;
         if (h == 0) return; // todo prevent the call in the first place?
 
-        int showTickOnLevel =
-                heightPerMinutePx > showOnMinimumPixelHeight[TICK][MINUTE] ? MINUTE :
-                        heightPerMinutePx > showOnMinimumPixelHeight[TICK][FIVE] ? FIVE :
-                                heightPerMinutePx > showOnMinimumPixelHeight[TICK][FIFTEEN] ? FIFTEEN :
-                                        heightPerMinutePx > showOnMinimumPixelHeight[TICK][THIRTY] ? THIRTY : HOUR;
-
-        int showTimeOnLevel =
-                heightPerMinutePx > showOnMinimumPixelHeight[TIME][MINUTE] ? MINUTE :
-                        heightPerMinutePx > showOnMinimumPixelHeight[TIME][FIVE] ? FIVE :
-                                heightPerMinutePx > showOnMinimumPixelHeight[TIME][FIFTEEN] ? FIFTEEN :
-                                        heightPerMinutePx > showOnMinimumPixelHeight[TIME][THIRTY] ? THIRTY : HOUR;
-
-        float drawY = 0, startX;
-        int level;
+        int showTickOnLevel = HOUR, showTimeOnLevel = HOUR;
+        for(int i = THIRTY; i >= 0; i--){
+            if (heightPerMinutePx > showOnMinimumPixelHeight[TICK][i]){
+                showTickOnLevel = i;
+            }
+            if (heightPerMinutePx > showOnMinimumPixelHeight[TIME][i]){
+                showTimeOnLevel = i;
+            }
+        }
 
         Calendar endTime = Calendar.getInstance();
         endTime.setTimeInMillis(dueDate);
         Calendar startTime = (Calendar) endTime.clone();
         startTime.add(Calendar.MINUTE, -(totalMinutes));
-        int minute;
 
         ticksPicture = new Picture();
-        Canvas canvas = ticksPicture.beginRecording(w, h);
+        Canvas canvas = ticksPicture.beginRecording(w, (int)h);
+        canvas.drawColor(Color.GREEN);
 
+        int minute, level;
+        float drawY = 0, startX;
         for (; startTime.compareTo(endTime) <= 0; startTime.add(Calendar.MINUTE, 1)) {
             minute = startTime.get(Calendar.MINUTE);
 
@@ -187,7 +176,10 @@ public class TimeBackgroundView extends View {
             }
             drawY += heightPerMinutePx;
         }
+
         ticksPicture.endRecording();
+        PictureDrawable pic = new PictureDrawable(ticksPicture);
+        this.setBackground(pic);
     }
 
     @Override

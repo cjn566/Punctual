@@ -3,12 +3,23 @@ package com.coltennye.punctual.deadline;
 import android.app.TimePickerDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Resources;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Picture;
+import android.graphics.Rect;
+import android.graphics.drawable.ClipDrawable;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.PictureDrawable;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -51,9 +62,9 @@ public class DeadlineActivity extends AppCompatActivity {
 
     private TextView tv_dueTime;
     private TextView tv_deadlineName;
-    private TimeBackgroundView timeBackgroundView;
     private LinearLayout activeTasks;
     private LinearLayout doneTasks;
+    private View backGroundView;
 
     private Deadline deadline;
     private Box<Task> taskBox;
@@ -64,18 +75,45 @@ public class DeadlineActivity extends AppCompatActivity {
     private MenuItem resetTasksMenuItem;
     private MenuItem editDeadlineMenuItem;
 
-    private int activeMinutes;
-
-
     private View.OnClickListener activeToCompleteOCL;
     private View.OnClickListener completeToActiveOCL;
     private View.OnLongClickListener editOLCL;
-    private int currentTaskMinutes;
+
     private float heightPerMinutePx;
-    private int dueMinuteOfDay;
-    private float taskRightMargin;
+    private int activeMinutes;
+    private int totalMinutes;
+    private int currentTaskMinutes;
+    private float taskLeftMargin;
     private float minMinutesHeightPx;
-    private TimeBackgroundView backGroundView;
+
+    private Paint mLinePaint;
+    private Paint mTxtPaint;
+    private Paint tickMarkPaint;
+
+    private float minuteTickWidth;
+    private float mLineY;
+    private float mTextPad;
+    private float mStrokeWidth;
+    private int beforeListPadding;
+    private int afterListPadding;
+    private int activeMinutesBackgroundWasDrawnAt;
+    private int screenheight;
+    private int screenwidth;
+    private int fullBackgroundHeight;
+    private PictureDrawable fullBackground;
+    private ClipDrawable clippedBackground;
+
+
+    private float[][] showOnMinimumPixelHeight = new float[2][5];
+
+    private static final int TICK = 0;
+    private static final int TIME = 1;
+    private static final int MINUTE = 0;
+    private static final int FIVE = 1;
+    private static final int FIFTEEN = 2;
+    private static final int THIRTY = 3;
+    private static final int HOUR = 4;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,6 +139,10 @@ public class DeadlineActivity extends AppCompatActivity {
         actionBar.setDisplayShowTitleEnabled(false);
         actionBar.setDisplayHomeAsUpEnabled(true);
 
+        initializeBackground();
+        clippedBackground = new ClipDrawable(new ColorDrawable(Color.RED), Gravity.BOTTOM, ClipDrawable.VERTICAL);
+        backGroundView.setBackground(clippedBackground);
+
         intervalTimer = new Handler();
         intervalMethod = new Runnable() {
             @Override
@@ -115,6 +157,7 @@ public class DeadlineActivity extends AppCompatActivity {
             @Override
             public void onClick (View view){
                 activeMinutes -= setTaskCompletionState(((TaskView) view).getTaskId(), true);
+                checkBackgroundRatio();
                 doneTasks.getChildAt(activeTasks.indexOfChild(view)).setVisibility(VISIBLE);
                 view.setVisibility(GONE);
             }
@@ -125,6 +168,7 @@ public class DeadlineActivity extends AppCompatActivity {
             @Override
             public void onClick (View view){
                 activeMinutes += setTaskCompletionState(((TaskView) view).getTaskId(), false);
+                checkBackgroundRatio();
                 activeTasks.getChildAt(doneTasks.indexOfChild(view)).setVisibility(VISIBLE);
                 view.setVisibility(GONE);
             }
@@ -138,6 +182,8 @@ public class DeadlineActivity extends AppCompatActivity {
                 return true;
             }
         };
+
+        minMinutesHeightPx = getResources().getDimensionPixelSize(R.dimen.shortest_task_height);
 
         updateTasksInViews();
 
@@ -246,7 +292,8 @@ public class DeadlineActivity extends AppCompatActivity {
         int dueHour = deadline.getHour();
         Calendar c = Calendar.getInstance();
         long now = c.getTimeInMillis();
-        c.clear();
+        c.clear(Calendar.MINUTE);
+        c.clear(Calendar.HOUR);
         c.set(Calendar.HOUR_OF_DAY, dueHour);
         c.set(Calendar.MINUTE, dueMinute);
         if (now > c.getTimeInMillis()) {
@@ -256,13 +303,13 @@ public class DeadlineActivity extends AppCompatActivity {
         tv_dueTime.setText(TimeConverter.timeOfDayString(c.getTime()));
         dueDateMillis = c.getTimeInMillis();
         updateTime();
+        drawBackground();
     }
 
     private void updateTime() {
-        int minutesRemaining = (int) (dueDateMillis - System.currentTimeMillis()) / (1000 * 60);
+        int minutesRemaining = (int) ((dueDateMillis - System.currentTimeMillis()) / (1000 * 60));
         if (minutesRemaining < 0) {
             setDueTime();
-            return;
         }
     }
 
@@ -378,24 +425,38 @@ public class DeadlineActivity extends AppCompatActivity {
         List<Task> tasks = deadline.tasks;
 
         if (tasks.size() <= 0) return;
-        int minDuration = 1000, d;
-        int totalMinutes = 0;
-        activeMinutes = 0;
+        int minDuration = 1000, d, newTotalMinutes = 0, newActiveMinutes = 0;
         currentTaskMinutes = tasks.get(0).getDuration();
 
         for (Task t : tasks) {
             d = t.getDuration();
-            totalMinutes += d;
+            newTotalMinutes += d;
             if(!t.isCompleted()){
-                activeMinutes += d;
+                newActiveMinutes += d;
             }
             if (d < minDuration) {
                 minDuration = d;
             }
         }
 
-        heightPerMinutePx = minMinutesHeightPx / minDuration;
-        backGroundView.setParams(heightPerMinutePx, totalMinutes, activeMinutes, dueDateMillis);
+        boolean updateTimeScale = false;
+
+
+        float newHPM = (minMinutesHeightPx / minDuration);
+        if (newHPM != heightPerMinutePx){
+            updateTimeScale = true;
+            heightPerMinutePx = newHPM;
+        }
+        if (newActiveMinutes != activeMinutes){
+            updateTimeScale = true;
+            activeMinutes = newActiveMinutes;
+        }
+        if (newTotalMinutes != totalMinutes){
+            updateTimeScale = true;
+            totalMinutes = newTotalMinutes;
+        }
+
+        if(updateTimeScale) drawBackground();
 
         LayoutInflater inflater = getLayoutInflater();
 
@@ -407,7 +468,7 @@ public class DeadlineActivity extends AppCompatActivity {
             TaskView child = (TaskView) inflater.inflate(R.layout.item_active_task, activeTasks, false);
             child.init(t, activeToCompleteOCL, editOLCL);
             LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) child.getLayoutParams();
-            lp.rightMargin = (int) taskRightMargin;
+            lp.leftMargin = (int) taskLeftMargin;
             lp.height = (int) (t.getDuration() * heightPerMinutePx);
             child.setLayoutParams(lp);
             child.setVisibility(t.isCompleted() ? GONE : VISIBLE);
@@ -420,6 +481,148 @@ public class DeadlineActivity extends AppCompatActivity {
             doneTasks.addView(doneChild);
         }
 
+    }
+
+    private void checkBackgroundRatio(){
+        if( activeMinutes > activeMinutesBackgroundWasDrawnAt ) {
+            setBackground();
+            return;
+        }
+
+        int diff = backGroundView.getHeight() - activeTasks.getHeight() - afterListPadding;
+        if((diff / screenheight) > 0.5) setBackground();
+    }
+
+    private void setBackground(){
+        int h = (int)(heightPerMinutePx * activeMinutes) + afterListPadding + beforeListPadding;
+        backGroundView.setLayoutParams(new ConstraintLayout.LayoutParams(screenwidth, h));
+        clippedBackground.setLevel(10000*( h / fullBackgroundHeight));
+        activeMinutesBackgroundWasDrawnAt = activeMinutes;
+    }
+
+    private void drawBackground(){
+        //backGroundView.setParams((int)heightPerMinutePx, totalMinutes, activeMinutes, dueDateMillis);
+        fullBackgroundHeight = (int)(heightPerMinutePx * totalMinutes) + afterListPadding + beforeListPadding;
+
+        int showTickOnLevel = HOUR, showTimeOnLevel = HOUR;
+        for(int i = THIRTY; i >= 0; i--){
+            if (heightPerMinutePx > showOnMinimumPixelHeight[TICK][i]){
+                showTickOnLevel = i;
+            }
+            if (heightPerMinutePx > showOnMinimumPixelHeight[TIME][i]){
+                showTimeOnLevel = i;
+            }
+        }
+
+        Calendar endTime = Calendar.getInstance();
+        endTime.setTimeInMillis(dueDateMillis);
+        Calendar startTime = (Calendar) endTime.clone();
+        startTime.add(Calendar.MINUTE, -(totalMinutes));
+
+        Picture ticksPicture = new Picture();
+        Canvas canvas = ticksPicture.beginRecording(screenwidth, fullBackgroundHeight);
+        canvas.drawColor(Color.GREEN);
+
+        int minute, level;
+        float drawY = 0, startX;
+        for (; startTime.compareTo(endTime) <= 0; startTime.add(Calendar.MINUTE, 1)) {
+            minute = startTime.get(Calendar.MINUTE);
+
+            level = MINUTE;
+            startX = screenwidth;
+            if ((minute % 5) == 0) {
+                level++;
+                if ((minute % 15) == 0) {
+                    level++;
+                    if ((minute % 30) == 0) {
+                        level++;
+                        if ((minute % 60) == 0) {
+                            level++;
+                        }
+                    }
+                }
+            }
+
+            if (level >= showTickOnLevel) {
+                /*switch (level){
+                    case MINUTE:
+                        tickMarkPaint.setStrokeWidth(1);
+                        break;
+                    case FIVE:
+                        tickMarkPaint.setStrokeWidth(1);
+                        break;
+                    case FIFTEEN:
+                        tickMarkPaint.setStrokeWidth(1);
+                        break;
+                    case THIRTY:
+                        tickMarkPaint.setStrokeWidth(1);
+                        break;
+                    case HOUR:
+                        tickMarkPaint.setStrokeWidth(1);
+                        break;
+                }*/
+                tickMarkPaint.setStrokeWidth(level + 1);
+                canvas.drawLine(0, drawY, screenwidth, drawY, tickMarkPaint);
+            }
+            if (level >= showTimeOnLevel) {
+                String text = TimeConverter.timeOfDayString(startTime.getTime());
+                Rect bounds = new Rect();
+                mTxtPaint.getTextBounds(text, 0, text.length(), bounds);
+                canvas.drawText(text, screenwidth - bounds.width(), drawY + (bounds.height() / 2), mTxtPaint);
+            }
+            drawY += heightPerMinutePx;
+        }
+
+        ticksPicture.endRecording();
+        //fullBackground.setPicture(ticksPicture);
+        clippedBackground = new ClipDrawable(new PictureDrawable(ticksPicture), Gravity.BOTTOM, ClipDrawable.VERTICAL);
+        //clippedBackground.setDrawable(new PictureDrawable(ticksPicture));
+        backGroundView.setBackground(clippedBackground);
+        setBackground();
+    }
+
+    private void initializeBackground(){
+        Resources res = getResources();
+
+        showOnMinimumPixelHeight[TICK][MINUTE] = res.getDimensionPixelSize(R.dimen.tick_min_height_break_minute);
+        showOnMinimumPixelHeight[TICK][FIVE] = res.getDimensionPixelSize(R.dimen.tick_min_height_break_five);
+        showOnMinimumPixelHeight[TICK][FIFTEEN] = res.getDimensionPixelSize(R.dimen.tick_min_height_break_fifteen);
+        showOnMinimumPixelHeight[TICK][THIRTY] = res.getDimensionPixelSize(R.dimen.tick_min_height_break_thirty);
+
+        showOnMinimumPixelHeight[TIME][MINUTE] = res.getDimensionPixelSize(R.dimen.time_min_height_break_minute);
+        showOnMinimumPixelHeight[TIME][FIVE] = res.getDimensionPixelSize(R.dimen.time_min_height_break_five);
+        showOnMinimumPixelHeight[TIME][FIFTEEN] = res.getDimensionPixelSize(R.dimen.time_min_height_break_fifteen);
+        showOnMinimumPixelHeight[TIME][THIRTY] = res.getDimensionPixelSize(R.dimen.time_min_height_break_thirty);
+
+        screenheight = res.getDisplayMetrics().heightPixels;
+        screenwidth = res.getDisplayMetrics().widthPixels;
+
+        beforeListPadding = res.getDimensionPixelSize(R.dimen.before_list_padding);
+        afterListPadding = res.getDimensionPixelSize(R.dimen.after_list_padding);
+        minMinutesHeightPx =    res.getDimensionPixelSize(R.dimen.shortest_task_height);
+        mStrokeWidth =          res.getDimensionPixelSize(R.dimen.due_line_thickness);
+
+        // Paint for tick marks
+        tickMarkPaint = new Paint();
+        tickMarkPaint.setColor(res.getColor(R.color.tick_marks));
+        tickMarkPaint.setStrokeWidth(res.getDimensionPixelSize(R.dimen.tick_mark_thickness));
+
+        // Paint for the remaining seconds line
+        mLinePaint = new Paint();
+        mLinePaint.setColor(Color.RED);
+        mLinePaint.setStrokeWidth(mStrokeWidth);
+
+        // Paint for the remaining minutes text
+        mTxtPaint = new Paint();
+        mTxtPaint.setColor(Color.BLACK);
+        mTxtPaint.setTextSize(res.getDimensionPixelSize(R.dimen.min_rem_text_size));
+        // mTxtPaint.setTextAlign(Paint.Align.CENTER);
+        mTextPad = res.getDimensionPixelSize(R.dimen.min_rem_text_pad);
+
+        // Ticks / clock stuff
+        minuteTickWidth = res.getDimensionPixelSize(R.dimen.minute_tick_width);
+
+        taskLeftMargin = 150;
     }
 
     @Override

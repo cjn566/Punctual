@@ -69,7 +69,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         //DEBUG:
-        goToDeadline(deadlineAdaptor.getItem(4).id);
+        //goToDeadline(deadlineAdaptor.getItem(0).id);
     }
 
     private void updateDeadlines(){
