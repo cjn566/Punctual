@@ -5,10 +5,10 @@ android:layout_width="match_parent"
 android:layout_height="match_parent"
 tools:context=".main.MainActivity">
 
-    <android.support.v7.widget.Toolbar
+    <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar_main"
         android:layout_width="match_parent"
-        android:layout_height="?android:attr/actionBarSize"
+        android:layout_height="@dimen/actionbar_height"
         android:background="@color/colorPrimary"
         android:elevation="4dp"
         android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
@@ -20,7 +20,7 @@ tools:context=".main.MainActivity">
         android:layout_below="@+id/toolbar_main"
         android:drawSelectorOnTop="false"/>
 
-    <android.support.design.widget.FloatingActionButton
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/newTaskFAB"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -29,7 +29,6 @@ tools:context=".main.MainActivity">
         android:layout_marginBottom="40dp"
         android:layout_marginEnd="40dp"
         android:clickable="true"
-        android:onClick="addDeadline"
         android:src="@android:drawable/ic_input_add"
         android:layout_alignParentRight="true"
         android:layout_marginRight="40dp" />

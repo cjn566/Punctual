@@ -1,22 +1,14 @@
 package com.coltennye.punctual.db;
 
-import android.content.Context;
-import android.support.annotation.NonNull;
-import android.util.AttributeSet;
-
-import com.coltennye.punctual.deadline.tasks.TaskView;
-
-import javax.annotation.Nullable;
+import androidx.annotation.NonNull;
 
 import io.objectbox.annotation.Entity;
 import io.objectbox.annotation.Id;
-import io.objectbox.relation.ToOne;
 
 @Entity
 public class Task{
 
     @Id public long id;
-    public ToOne<Deadline> deadline;
     private String name;
     private int duration;
     private boolean completed;

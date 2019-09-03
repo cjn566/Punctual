@@ -4,34 +4,6 @@
   "_note3": "If you have VCS merge conflicts, you must resolve them according to ObjectBox docs.",
   "entities": [
     {
-      "id": "1:4886684600108776135",
-      "lastPropertyId": "6:3089355236705260910",
-      "name": "Deadline",
-      "properties": [
-        {
-          "id": "1:2173652667578127127",
-          "name": "id"
-        },
-        {
-          "id": "2:7065607907299576055",
-          "name": "name"
-        },
-        {
-          "id": "4:7282885377510340243",
-          "name": "minute"
-        },
-        {
-          "id": "5:4206075923108556945",
-          "name": "active"
-        },
-        {
-          "id": "6:3089355236705260910",
-          "name": "hour"
-        }
-      ],
-      "relations": []
-    },
-    {
       "id": "2:2471264857147969286",
       "lastPropertyId": "6:5221174909141373784",
       "name": "Task",
@@ -49,11 +21,6 @@
           "name": "name"
         },
         {
-          "id": "4:640449363187242335",
-          "indexId": "1:8103629538669510287",
-          "name": "deadlineId"
-        },
-        {
           "id": "5:4416644955846869578",
           "name": "completed"
         }
@@ -67,11 +34,21 @@
   "lastSequenceId": "0:0",
   "modelVersion": 4,
   "modelVersionParserMinimum": 4,
-  "retiredEntityUids": [],
-  "retiredIndexUids": [],
+  "retiredEntityUids": [
+    4886684600108776135
+  ],
+  "retiredIndexUids": [
+    8103629538669510287
+  ],
   "retiredPropertyUids": [
     5221174909141373784,
-    2361681698599079201
+    2361681698599079201,
+    640449363187242335,
+    2173652667578127127,
+    7065607907299576055,
+    7282885377510340243,
+    4206075923108556945,
+    3089355236705260910
   ],
   "retiredRelationUids": [
     3041608796486798152

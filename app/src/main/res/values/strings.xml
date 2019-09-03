@@ -9,6 +9,11 @@
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="edit_deadline">Edit</string>
+    <string name="due_hour_key">due_hour_key</string>
+    <string name="due_minute_key">due_minute_key</string>
+    <string name="is_active_key">is_active_key</string>
+    <string name="notifications">Notifications</string>
+    <string name="ic_settings_title">Settings</string>
 
     <string-array name="test">
         <item>one</item>

@@ -1,25 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <group android:id="@+id/toggle_group">
+        <item
+            android:id="@+id/menu_deadline_active_switch"
+            android:title="@string/toggle_active"
+            android:checkable="true"
+            app:actionLayout="@layout/ic_toggle"
+            app:showAsAction="always"/>
+        <item
+            android:id="@+id/toggle_icon_on"
+            android:title="Alarm On"
+            app:showAsAction="always"
+            app:materialIcon="alarm_check"/>
+        <item
+            android:id="@+id/toggle_icon_off"
+            android:title="Alarm Off"
+            app:showAsAction="always"
+            app:materialIcon="alarm_off"/>
+    </group>
+
     <item android:id="@+id/reset_tasks"
         android:title="@string/reset_tasks"
-        android:icon="@drawable/ic_history_black_24dp"
-        app:showAsAction="ifRoom">
+        app:showAsAction="ifRoom"
+        app:materialIcon="history">
     </item>
-    <item android:id="@+id/edit_deadline"
-        android:title="@string/edit_deadline"
-        android:icon="@drawable/ic_edit_black_24dp"
-        app:showAsAction="ifRoom">
+
+    <item android:id="@+id/settings"
+        android:title="@string/ic_settings_title"
+        app:showAsAction="ifRoom"
+        app:materialIcon="settings">
     </item>
-    <item
-        android:id="@+id/menu_deadline_active_switch"
-        android:title="@string/toggle_active"
-        android:checkable="true"
-        app:actionLayout="@layout/ic_toggle"
-        app:showAsAction="always"/>
-    <item
-        android:id="@+id/delete_deadline"
-        android:title="Delete"
-        app:showAsAction="never"/>
+
 
 </menu>

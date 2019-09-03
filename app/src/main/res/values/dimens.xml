@@ -1,34 +1,16 @@
 <resources>
     <dimen name="fab_margin">16dp</dimen>
 
-
     <dimen name="shortest_task_height">50dp</dimen>
     <dimen name="before_list_padding">50dp</dimen>
     <dimen name="after_list_padding">50dp</dimen>
     <dimen name="actionbar_height">35dp</dimen>
+    <dimen name="divider_height">20dp</dimen>
 
     // Tick marks and time remaining stuff
     <dimen name="task_right_pad">50dp</dimen>
     <dimen name="tick_mark_thickness">2dp</dimen>
-    <dimen name="due_line_thickness">1dp</dimen>
     <dimen name="min_rem_text_size">10dp</dimen>
     <dimen name="min_rem_text_pad">5dp</dimen>
-    <dimen name="minute_tick_width">1dp</dimen>
-    <dimen name="five_min_tick_width">3dp</dimen>
-    <dimen name="fifteen_tick_width">6dp</dimen>
-    <dimen name="hour_tick_width">10dp</dimen>
-
-    // Ticks and Time Media Breaks
-    <dimen name="tick_min_height_break_minute">11dp</dimen>
-    <dimen name="tick_min_height_break_five">10dp</dimen>
-    <dimen name="tick_min_height_break_fifteen">5dp</dimen>
-    <dimen name="tick_min_height_break_thirty">1dp</dimen>
-    <dimen name="tick_min_height_break_hour">0.2dp</dimen>
-
-    <dimen name="time_min_height_break_minute">40dp</dimen>
-    <dimen name="time_min_height_break_five">20dp</dimen>
-    <dimen name="time_min_height_break_fifteen">10dp</dimen>
-    <dimen name="time_min_height_break_thirty">2dp</dimen>
-    <dimen name="time_min_height_break_hour">1dp</dimen>
 
 </resources>
